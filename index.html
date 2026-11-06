@@ -204,6 +204,19 @@ input:disabled{background:#EEEDE6;color:var(--muted)}
 .bstat a{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;text-decoration:none;color:var(--ink)}
 .bstat b{font:700 26px var(--head);display:block}.bstat span{font-size:13px;color:var(--muted)}
 .bstat a:nth-child(1) b{color:#9B2C66}.bstat a:nth-child(2) b{color:#1E4FA0}
+/* rich tag boxes */
+.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:480px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tile{align-items:stretch;justify-content:flex-start;text-align:left;padding:10px 10px 10px 12px;gap:3px;min-height:112px}
+.tile .tr1{display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-height:18px;padding-right:22px}
+.tile .no{justify-content:flex-start;font-size:25px;margin:2px 0}
+.tile .no .ear{width:19px;height:19px}
+.tile .meta{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
+.tile .nt{font-size:12.5px;font-weight:700;padding:0;white-space:normal;line-height:1.3;margin-top:2px}
+.tile.done .nt{color:var(--gd)}
+.pill{font-size:11px;font-weight:700;border-radius:6px;padding:2px 6px;line-height:1.3}
+.pill.p{background:#F9DDEB;color:#8A1F57}.pill.i{background:#DCE8F8;color:#1E4FA0}.pill.e{background:#ECEBE4;color:#454B3C}
+.tile.preg .nt,.tile.insem .nt{color:inherit}
 a.btn{color:var(--ink);text-decoration:none}a.btn.primary{color:#fff}
 </style>
 </head>
@@ -256,7 +269,18 @@ var LOGO='<span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" stroke=
 var EAR='<svg class="ear" viewBox="0 0 24 24" stroke="#5C4A00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path fill="#F2C230" d="M9.5 2.5h5A1.5 1.5 0 0 1 16 4v3l3.2 2.2a2 2 0 0 1 .8 1.6V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-9.2a2 2 0 0 1 .8-1.6L8 7V4a1.5 1.5 0 0 1 1.5-1.5z"/><circle cx="12" cy="5.2" r="1.3" fill="#fff"/></svg>';
 var SEXI={Male:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="14" r="6"/><path d="M14.5 9.5L21 3M15 3h6v6"/></svg>',Female:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M12 15v7M9 19h6"/></svg>'};
 function sexMini(t){if(!t||!t.sex)return'';return'<span class="sx '+(t.sex==='Male'?'m':'f')+'">'+SEXI[t.sex]+t.sex+'</span>';}
-function tileIn(no,sub){var t=getTag(no);return sexMini(t)+'<span class="no">'+EAR+'<span>'+esc(no)+'</span></span><span class="nt">'+(sub?esc(sub):'&nbsp;')+'</span>';}
+function pillOf(t){if(!t||t.sex==='Male')return'';return t.preg==='pregnant'?'<span class="pill p">Pregnant</span>':t.preg==='insem'?'<span class="pill i">Inseminated</span>':t.preg==='empty'?'<span class="pill e">Empty</span>':'';}
+function tileIn(no,extra){
+  var t=getTag(no);
+  var am=t?ageMonths(t):null,lw=t?lastWeight(t):null;
+  var m1=[am!=null?(fmtAge(am)||'Newborn'):'',lw?fmtKg(lw.kg):''].filter(Boolean).join(' · ');
+  var m2=t?(t.shed||t.note||''):'';
+  return'<span class="tr1">'+sexMini(t)+pillOf(t)+'</span>'+
+    '<span class="no">'+EAR+'<span>'+esc(no)+'</span></span>'+
+    '<span class="meta">'+(m1?esc(m1):'<span style="opacity:.5">No age / weight</span>')+'</span>'+
+    (m2?'<span class="meta">'+esc(m2)+'</span>':'')+
+    (extra?'<span class="nt">'+esc(extra)+'</span>':'');
+}
 function tileCls(t){if(!t)return'';if(t.removed)return' gone';if(t.sex==='Male')return'';return t.preg==='pregnant'?' preg':t.preg==='insem'?' insem':'';}
 function shortPreg(t){return t&&t.sex!=='Male'?(t.preg==='pregnant'?'Pregnant':t.preg==='insem'?'Inseminated':''):'';}
 /* ---------- presets ---------- */
@@ -740,7 +764,7 @@ function vHerd(){
     var g=$('#hg');
     if(!db.tags.length){g.innerHTML='<div class="empty"><div class="big">'+I.tag+'</div><h3>No heifers yet</h3><span>Type a tag number above and tap Add.</span></div>';return;}
     if(!list.length){g.innerHTML='<div class="empty"><h3>No tag “'+esc(herdQ.trim())+'”</h3>'+(ql?'<button class="btn primary" id="addQ">Add '+esc(herdQ.trim())+'</button>':'')+'</div>';var aq=$('#addQ');if(aq)aq.addEventListener('click',function(){doAdd(herdQ);herdQ='';q.value='';drawHerd();});return;}
-    g.innerHTML=list.map(function(t){var sub=t.removed?t.removed.r:shortPreg(t)||tagSub(t.no);return'<a class="tile'+tileCls(t)+'" href="#tag-'+encodeURIComponent(t.no)+'" style="text-decoration:none;color:inherit">'+tileIn(t.no,sub)+'</a>';}).join('');
+    g.innerHTML=list.map(function(t){var sub=t.removed?'Removed — '+t.removed.r:'';return'<a class="tile'+tileCls(t)+'" href="#tag-'+encodeURIComponent(t.no)+'" style="text-decoration:none;color:inherit">'+tileIn(t.no,sub)+'</a>';}).join('');
   }
 }
 
@@ -1107,7 +1131,7 @@ function vSelect(){
     $('#sDone').textContent=n?'Use '+n+' heifer'+(n>1?'s':''):'Select heifers';$('#sDone').disabled=!n;
     var g=$('#sg');
     if(!m.length){g.innerHTML='<div class="empty"><h3>'+(selQ.trim()?'No tag “'+esc(selQ.trim())+'”':'No heifers saved')+'</h3>'+(selQ.trim()?'<button class="btn primary" id="addSel">Save &amp; select '+esc(selQ.trim())+'</button>':'<a class="btn primary" href="#herd" style="text-decoration:none">Add heifers</a>')+'</div>';var a=$('#addSel');if(a)a.addEventListener('click',addAndSel);return;}
-    g.innerHTML=m.map(function(t){return'<button class="tile '+(d.sel[t.no]?'sel':tileCls(t))+'" data-t="'+esc(t.no)+'" aria-pressed="'+(!!d.sel[t.no])+'">'+tileIn(t.no,shortPreg(t)||tagSub(t.no))+'</button>';}).join('');
+    g.innerHTML=m.map(function(t){return'<button class="tile '+(d.sel[t.no]?'sel':tileCls(t))+'" data-t="'+esc(t.no)+'" aria-pressed="'+(!!d.sel[t.no])+'">'+tileIn(t.no,'')+'</button>';}).join('');
     $all('.tile',g).forEach(function(b){b.addEventListener('click',function(){toggle(b.dataset.t);var on=!!d.sel[b.dataset.t];b.classList.toggle('sel',on);b.setAttribute('aria-pressed',on);var n2=Object.keys(d.sel).length;$('#sc').textContent=n2+' selected'+(selQ.trim()?' · '+m.length+' shown':'');$('#sDone').textContent=n2?'Use '+n2+' heifer'+(n2>1?'s':''):'Select heifers';$('#sDone').disabled=!n2;});});
   }
 }
@@ -1215,7 +1239,7 @@ function vSession(s){
     }
     g.innerHTML=list.map(function(t){
       var x=s.st[t];var cls=x?(x.s==='done'?'done':'skip'):'';
-      var sub=x&&x.s==='skip'?(x.r||'Skipped'):x&&x.w?fmtKg(x.w):x&&x.res?x.res:x&&x.s==='done'&&isAI(s)?'Inseminated':tagSub(t);
+      var sub=x&&x.s==='skip'?'Skipped — '+(x.r||'no reason'):x&&x.w?'Weighed '+fmtKg(x.w):x&&x.res?'Result: '+x.res:x&&x.s==='done'?(isAI(s)?'Inseminated today':'Done'):'';
       return'<button class="tile '+cls+(x?'':tileCls(getTag(t)))+'" data-t="'+esc(t)+'" aria-label="Tag '+esc(t)+(x?(x.s==='done'?', done':', skipped'):'')+'">'+tileIn(t,sub)+'</button>';
     }).join('');
   }
