@@ -1,0 +1,16 @@
+{
+  "name": "Heifer Diary",
+  "short_name": "Heifer Diary",
+  "description": "Track vaccinations, deworming and treatments for your heifers by tag number.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6F5EF",
+  "theme_color": "#2F6B3A",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
