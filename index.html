@@ -639,6 +639,7 @@ function vTag(no){
   '<div class="types"><div class="stack"><label class="label" for="fBirth">Birth date</label><input class="input" type="date" id="fBirth" value="'+esc(f.birth)+'"></div>'+
   '<div class="stack"><label class="label" for="fAge">Age (months)</label><input class="input" id="fAge" inputmode="numeric" value="'+esc(f.birth?(age!=null?age:''):f.ageM)+'" placeholder="e.g. 14" '+(f.birth?'disabled':'')+'></div></div>'+
   '<span class="small muted" id="ageTxt" style="margin-top:-10px">'+(f.birth?'Age is worked out from the birth date: '+esc(fmtAge(age)):'No birth date? Type the approximate age in months — it will keep counting up.')+'</span>'+
+  '<div class="stack"><label class="label" for="fMom">Mother tag (optional)</label><div class="addrow"><input class="input" id="fMom" inputmode="numeric" value="'+esc(t.mother||'')+'" placeholder="e.g. 1042" autocomplete="off"><button type="button" class="btn" id="viewMom" style="white-space:nowrap">View mother</button></div><span class="small muted" id="momTxt"></span></div>'+
   '<div class="stack"><label class="label" for="fKg">Current weight (kg)</label><input class="input" id="fKg" inputmode="decimal" placeholder="'+(lw?esc(String(lw.kg)):'e.g. 280')+'" autocomplete="off">'+
   (lw?'<span class="small muted">Last: '+esc(fmtKg(lw.kg))+' on '+esc(fmtDate(lw.d))+'. Type a new weight to add today\'s reading.</span>':'')+'</div>'+
   '<div class="stack"><label class="label" for="fShed">Shed / location</label><input class="input" id="fShed" value="'+esc(f.shed)+'" placeholder="e.g. Main heifers area" autocomplete="off">'+
@@ -657,7 +658,8 @@ function vTag(no){
   '<div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" id="viewCalf">View calf</button><button type="button" class="btn sm primary" id="recDel">'+I.plus.replace('<svg','<svg width="18" height="18"')+'Record new delivery</button></div>';
   if(t.calvings&&t.calvings.length>1){h+='<div class="list" style="margin-top:4px">'+t.calvings.slice().sort(function(a,b){return(b.d||'').localeCompare(a.d||'');}).map(function(c){return'<a class="li" style="text-decoration:none;color:inherit" href="#tag-'+encodeURIComponent(c.calf||'')+'"><span class="grow"><span style="display:block;font-weight:600">'+esc(fmtDate(c.d))+'</span><span class="sub">Calf '+esc(c.calf||'—')+(c.sex?' · '+esc(c.sex):'')+'</span></span>'+I.chev+'</a>';}).join('')+'</div>';}
   h+='</div>';
-  if(t.mother)h+='<a class="btn sm" style="align-self:flex-start;margin-top:4px" href="#tag-'+encodeURIComponent(t.mother)+'">Mother: tag '+esc(t.mother)+'</a>';
+  var kids=t.no?db.tags.filter(function(k){return k.mother===t.no;}):[];
+  if(kids.length)h+='<div class="stack"><div class="label">Her calves ('+kids.length+')</div><div class="list">'+kids.map(function(k){return'<a class="li" style="text-decoration:none;color:inherit" href="#tag-'+encodeURIComponent(k.no)+'"><span class="tg">'+esc(k.no)+'</span><span class="grow sub">'+esc([k.sex,k.birth?'born '+fmtDate(k.birth):'',fmtAge(ageMonths(k)),k.removed?'removed':''].filter(Boolean).join(' · '))+'</span>'+I.chev+'</a>';}).join('')+'</div></div>';
   h+='</div>';
   h+='<div class="stack"><label class="label" for="fNote">Notes</label><textarea class="input" id="fNote" rows="2" placeholder="Colour, breed, anything…">'+esc(f.note)+'</textarea></div>';
   if(!isNew){
@@ -695,6 +697,12 @@ function vTag(no){
   $('#lMinus').addEventListener('click',function(){if(B.lact>0)B.lact--;rb();});
   $('#lPlus').addEventListener('click',function(){B.lact++;rb();});
   rb();
+  function rm(){var m=norm($('#fMom').value);var b=$('#viewMom'),tx=$('#momTxt');var mt=m?getTag(m):null;
+    b.style.display=m?'':'none';b.textContent=mt?'View mother':'Add mother';
+    tx.textContent=!m?'':m===norm($('#fNo').value)?'A heifer can\'t be her own mother':mt?[pregLabel(mt),lactLabel(mt),mt.shed,mt.removed?'Removed':''].filter(Boolean).join(' · ')||'Saved in your heifers':'Not in your heifers yet — tap Add mother to save her';}
+  $('#fMom').addEventListener('input',rm);rm();
+  $('#viewMom').addEventListener('click',function(){var m=norm($('#fMom').value);if(!m)return;
+    doSave(function(){if(!getTag(m)){db.tags.push({no:m,note:'',weights:[],sex:'Female',lact:0});db.tags.sort(function(a,b){return cmp(a.no,b.no);});save();toast('Mother '+m+' added to your heifers');}go('#tag-'+encodeURIComponent(m));});});
   function addCalf(cv,d,sex){if(!cv||getTag(cv))return false;db.tags.push({no:cv,note:'',weights:[],birth:d||'',mother:t.no,shed:'Calf pen',lact:0,sex:sex||''});db.tags.sort(function(a,b){return cmp(a.no,b.no);});return true;}
   $('#viewCalf').addEventListener('click',function(){var cv=norm($('#fCalf').value);if(!cv)return;doSave(function(){if(addCalf(cv,t.calving,'')){save();toast('Calf '+cv+' added to your heifers');}go('#tag-'+encodeURIComponent(cv));});});
   $('#recDel').addEventListener('click',function(){
@@ -734,10 +742,11 @@ function vTag(no){
     if(!newNo){toast('Type the tag number first');$('#fNo').focus();return;}
     var clash=db.tags.some(function(x){return x!==t&&x.no.toLowerCase()===newNo.toLowerCase();});
     if(clash){toast('Tag '+newNo+' is already saved');return;}
+    var momV=norm($('#fMom').value);if(momV&&momV.toLowerCase()===newNo.toLowerCase()){toast('A heifer can\'t be her own mother');return;}
     var kgV=parseFloat(String($('#fKg').value).replace(',','.'));
     var oldNo=t.no;
     t.no=newNo;t.sex=f.sex;t.shed=norm($('#fShed').value);t.note=norm($('#fNote').value);
-    t.birth=$('#fBirth').value||'';
+    t.birth=$('#fBirth').value||'';t.mother=momV;
     if(t.birth){delete t.ageM;delete t.ageAt;}
     else{var am=$('#fAge').value;if(am!==''&&!isNaN(+am)){if(String(am)!==String(ageMonths(t))){t.ageM=+am;t.ageAt=todayISO();}}else{delete t.ageM;delete t.ageAt;}}
     if(f.sex!=='Male'){
@@ -758,6 +767,7 @@ function vTag(no){
   }
 }
 function renameTag(a,b){
+  db.tags.forEach(function(k){if(k.mother===a)k.mother=b;});
   db.sessions.forEach(function(s){var i=s.tags.indexOf(a);if(i>=0){s.tags[i]=b;if(s.st[a]){s.st[b]=s.st[a];delete s.st[a];}}});
 }
 function tagHistory(no){
