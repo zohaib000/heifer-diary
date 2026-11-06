@@ -30,8 +30,14 @@ button{cursor:pointer}
 .app{max-width:560px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;position:relative}
 .view{flex:1;display:flex;flex-direction:column;min-height:100dvh}
 h1,h2,h3{font-family:var(--head);margin:0}
-.top{display:flex;align-items:center;gap:12px;padding:calc(16px + var(--st)) 20px 8px}
-.top h1{font-size:24px;font-weight:700;flex:1}
+.top{display:flex;align-items:center;gap:12px;padding:calc(14px + var(--st)) 16px 16px;background:var(--g);color:#fff;border-radius:0 0 24px 24px;box-shadow:0 4px 14px rgba(31,74,40,.18);margin-bottom:4px}
+.top h1{font-size:22px;font-weight:700;flex:1;color:#fff;line-height:1.15}
+.top .muted{color:#D3E6CF}
+.top .sub{font-size:13px;color:#D3E6CF;margin-top:2px}
+.top .iconbtn{background:#3E7D49;border:none;color:#fff}
+.top .iconbtn svg{stroke:#fff}
+.logo{width:42px;height:42px;border-radius:12px;background:#F6F5EF;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo svg{width:26px;height:26px}
 .iconbtn{width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .iconbtn svg{width:20px;height:20px}
 .content{flex:1;padding:12px 20px 24px;display:flex;flex-direction:column;gap:22px}
@@ -205,6 +211,7 @@ var I={
   }
 };
 
+var LOGO='<span class="logo" aria-hidden="true"><svg viewBox="0 0 512 512"><path d="M110 100h170l110 110a30 30 0 0 1 0 42L262 390a30 30 0 0 1-42 0l-110-110z" fill="#2F6B3A"/><circle cx="180" cy="170" r="26" fill="#F6F5EF"/><path d="M190 265l40 40 80-90" fill="none" stroke="#F6F5EF" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
 /* ---------- presets ---------- */
 var TYPES=['Vaccination','Deworming','Treatment','Activity'];
 var PRESETS={
@@ -327,7 +334,7 @@ function vHome(){
   var live=db.sessions.filter(function(s){return!s.finishedAt;}).sort(function(a,b){return b.createdAt-a.createdAt;});
   var fin=db.sessions.filter(function(s){return s.finishedAt;}).sort(function(a,b){return b.finishedAt-a.finishedAt;}).slice(0,3);
   var d=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
-  var h='<div class="view"><div class="hero-home"><div class="date">'+esc(d)+'</div><h1>Heifer Diary</h1></div><div class="content">';
+  var h='<div class="view"><div class="top" style="padding-bottom:20px">'+LOGO+'<div style="flex:1;min-width:0"><h1 style="font-size:24px">Heifer Diary</h1><div class="sub">'+esc(d)+'</div></div></div><div class="content">';
   if(!db.tags.length){
     h+='<div class="card stack" style="background:var(--gl);border-color:#B9D6B3"><h3 style="font-size:19px">Start by saving your tag numbers</h3><p class="muted small" style="margin:0">Add every heifer\'s tag once. You can paste a whole list at a time.</p><a href="#herd" class="btn primary" style="text-decoration:none">Add heifers</a></div>';
   }
@@ -344,7 +351,7 @@ function vHome(){
 /* ---------- HERD ---------- */
 var herdQ='';
 function vHerd(){
-  var h='<div class="view"><div class="top"><h1>My heifers <span class="muted" style="font-weight:500">('+db.tags.length+')</span></h1><button class="iconbtn" id="bk" aria-label="Backup and restore">'+I.more+'</button></div>'+
+  var h='<div class="view"><div class="top">'+LOGO+'<h1>My heifers <span class="muted" style="font-weight:500">('+db.tags.length+')</span></h1><button class="iconbtn" id="bk" aria-label="Backup and restore">'+I.more+'</button></div>'+
   '<div class="content" style="gap:16px">'+
   '<div class="stack"><label class="label" for="addIn">Add tag numbers</label>'+
   '<div class="addrow"><input class="input" id="addIn" placeholder="e.g. 1042 or 1042, 233, 87" autocomplete="off" enterkeyhint="done"><button class="btn primary" id="addBtn" style="width:84px">Add</button></div>'+
@@ -429,7 +436,7 @@ function restoreText(txt){
 /* ---------- HISTORY ---------- */
 function vHistory(){
   var all=db.sessions.slice().sort(function(a,b){return(b.date||'').localeCompare(a.date||'')||b.createdAt-a.createdAt;});
-  var h='<div class="view"><div class="top"><h1>History</h1></div><div class="content" style="gap:12px">';
+  var h='<div class="view"><div class="top">'+LOGO+'<h1>History</h1></div><div class="content" style="gap:12px">';
   if(!all.length)h+='<div class="empty"><div class="big">'+I.clock.replace('<svg','<svg stroke="currentColor"')+'</div><h3>No treatments yet</h3><span>Treatments you start will show up here.</span></div>';
   else h+=all.map(sessionCard).join('');
   h+='</div>'+nav('history')+'</div>';
