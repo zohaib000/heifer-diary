@@ -191,6 +191,19 @@ input:disabled{background:#EEEDE6;color:var(--muted)}
 .tile.gone{opacity:.65;border-style:dashed}.tile.gone .nt{color:var(--red)}
 .tile.preg{border-color:#E7B6CF;background:#FCF1F6}.tile.preg .nt{color:#9B2C66;font-weight:600}
 .sect .iconbtn{background:#F1F0EA}
+.tile{min-height:88px}
+.tile .no{display:flex;align-items:center;justify-content:center;gap:4px}
+.tile .no .ear{width:17px;height:17px;flex-shrink:0}
+.sx{font-size:11px;font-weight:700;display:flex;align-items:center;gap:3px;line-height:1}
+.sx svg{width:12px;height:12px}.sx.m{color:#1E4FA0}.sx.f{color:#9B2C66}
+.tile.insem{border-color:#A9C4EA;background:#EEF4FC}.tile.insem .nt{color:#1E4FA0;font-weight:600}
+.nav{grid-template-columns:repeat(5,minmax(0,1fr));padding-left:4px;padding-right:4px}
+.nav a{font-size:11px}
+.kgbig{font:700 30px var(--head);color:var(--gd);white-space:nowrap}
+.bstat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.bstat a{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;text-decoration:none;color:var(--ink)}
+.bstat b{font:700 26px var(--head);display:block}.bstat span{font-size:13px;color:var(--muted)}
+.bstat a:nth-child(1) b{color:#9B2C66}.bstat a:nth-child(2) b{color:#1E4FA0}
 a.btn{color:var(--ink);text-decoration:none}a.btn.primary{color:#fff}
 </style>
 </head>
@@ -224,6 +237,8 @@ var I={
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
   home:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
   tag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2.5h5A1.5 1.5 0 0 1 16 4v3l3.2 2.2a2 2 0 0 1 .8 1.6V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-9.2a2 2 0 0 1 .8-1.6L8 7V4a1.5 1.5 0 0 1 1.5-1.5z"/><circle cx="12" cy="5.2" r="1.3"/><path d="M8 15.5h8M9.5 18.5h5"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>',
   camera:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
   clock:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M16 6l-4-4-4 4M12 2v14"/></svg>',
@@ -231,18 +246,32 @@ var I={
     Vaccination:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 2l4 4M17 7l3-3M19 9L9 19l-4 1 1-4L16 6z"/></svg>',
     Deworming:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="5"/><path d="M7 12h10"/></svg>',
     Treatment:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v8M8 12h8"/><rect x="3" y="3" width="18" height="18" rx="4"/></svg>',
+    AI:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v6"/><path d="M8 8h8l-1 12a3 3 0 0 1-6 0z"/></svg>',
+    PregCheck:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/><path d="M8 3.5l1 2M16 3.5l-1 2"/></svg>',
     Activity:'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'
   }
 };
 
 var LOGO='<span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" stroke="#1F4A28" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path fill="#F2C230" d="M9.5 2.5h5A1.5 1.5 0 0 1 16 4v3l3.2 2.2a2 2 0 0 1 .8 1.6V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-9.2a2 2 0 0 1 .8-1.6L8 7V4a1.5 1.5 0 0 1 1.5-1.5z"/><circle cx="12" cy="5.2" r="1.3" fill="#F6F5EF"/><path d="M8 15.5h8M9.5 18.5h5" fill="none" stroke-width="1.8"/></svg></span>';
+var EAR='<svg class="ear" viewBox="0 0 24 24" stroke="#5C4A00" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path fill="#F2C230" d="M9.5 2.5h5A1.5 1.5 0 0 1 16 4v3l3.2 2.2a2 2 0 0 1 .8 1.6V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-9.2a2 2 0 0 1 .8-1.6L8 7V4a1.5 1.5 0 0 1 1.5-1.5z"/><circle cx="12" cy="5.2" r="1.3" fill="#fff"/></svg>';
+var SEXI={Male:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="14" r="6"/><path d="M14.5 9.5L21 3M15 3h6v6"/></svg>',Female:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M12 15v7M9 19h6"/></svg>'};
+function sexMini(t){if(!t||!t.sex)return'';return'<span class="sx '+(t.sex==='Male'?'m':'f')+'">'+SEXI[t.sex]+t.sex+'</span>';}
+function tileIn(no,sub){var t=getTag(no);return sexMini(t)+'<span class="no">'+EAR+'<span>'+esc(no)+'</span></span><span class="nt">'+(sub?esc(sub):'&nbsp;')+'</span>';}
+function tileCls(t){if(!t)return'';if(t.removed)return' gone';if(t.sex==='Male')return'';return t.preg==='pregnant'?' preg':t.preg==='insem'?' insem':'';}
+function shortPreg(t){return t&&t.sex!=='Male'?(t.preg==='pregnant'?'Pregnant':t.preg==='insem'?'Inseminated':''):'';}
 /* ---------- presets ---------- */
-var TYPES=['Vaccination','Deworming','Treatment','Activity'];
+var TYPES=['Vaccination','Deworming','Treatment','AI','PregCheck','Activity'];
+var TLABEL={Vaccination:'Vaccination',Deworming:'Deworming',Treatment:'Treatment',AI:'Insemination (AI)',PregCheck:'Pregnancy check',Activity:'Other activity'};
+function typeLabel(t){return TLABEL[t]||t;}
+function isAI(s){return s.type==='AI';}
+function isPC(s){return s.type==='PregCheck';}
 var PRESETS={
   Vaccination:['FMD (Foot & Mouth)','HS (Hemorrhagic Septicemia)','Black Quarter (BQ)','LSD (Lumpy Skin)','Brucellosis','Anthrax','Theileriosis','Rabies','IBR','BVD','PPR','Clostridial (7-in-1)'],
   Deworming:['Thunder|h','Punch|h','Albendazole|c','Albendazole + Liver tonic|c','Ivermectin','Fenbendazole','Levamisole','Oxfendazole','Oxyclozanide','Closantel','Doramectin'],
-  Treatment:['Antibiotic','Anti-inflammatory','Mastitis treatment','Wound dressing','Vitamin AD3E','Mineral / Calcium','Liver tonic','Eye treatment','Bloat treatment','Diarrhea treatment'],
-  Activity:['Tick spray / Dipping','Hoof trimming','Weighing','Pregnancy check','Insemination (AI)','Heat check','Ear tagging','Dehorning','Body condition score','Blood sample','Hair clipping']
+  Treatment:['Antibiotic','Anti-inflammatory','Mastitis treatment','Wound dressing','Hoof dipping (footbath)','Vitamin AD3E','Mineral / Calcium','Liver tonic','Eye treatment','Bloat treatment','Diarrhea treatment'],
+  AI:['Insemination','Holstein Friesian semen','Jersey semen','Sahiwal semen','Cholistani semen','Cross-bred semen','Sexed semen (female)','Natural service (bull)'],
+  PregCheck:['Pregnancy check','Pregnancy check (vet / scan)','Pregnancy check (rectal)'],
+  Activity:['Tick spray / Dipping','Hoof dipping (footbath)','Hoof trimming','Weighing','Heat check','Ear tagging','Dehorning','Body condition score','Blood sample','Hair clipping'],
 };
 function pName(p){return p.split('|')[0];}
 function presetNames(t){return(PRESETS[t]||[]).map(pName);}
@@ -263,6 +292,7 @@ function load(){
   d.sessions=Array.isArray(d.sessions)?d.sessions:[];
   d.custom=d.custom&&typeof d.custom==='object'?d.custom:{};
   if(!Array.isArray(d.rem))d.rem=defaultRems();
+  if(!Array.isArray(d.sheds)){var u={'Calf pen':1,'Main heifers area':1,'Cows area':1};d.tags.forEach(function(t){if(t.shed)u[t.shed]=1;});d.sheds=Object.keys(u);}
   return d;
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}}
@@ -340,7 +370,10 @@ function route(){
   var h=location.hash.replace(/^#/,'');var p=h.split('-');
   window.scrollTo(0,0);
   if(p[0]==='herd')return vHerd();
-  if(p[0]==='rem')return vRem();
+  if(p[0]==='rem'||p[0]==='manage')return vManage('rem');
+  if(p[0]==='sheds')return vManage('sheds');
+  if(p[0]==='backup')return vManage('backup');
+  if(p[0]==='breeding')return vBreeding();
   if(p[0]==='tag')return vTag(decodeURIComponent(p.slice(1).join('-')));
   if(p[0]==='history')return vHistory();
   if(p[0]==='new'){if(!draft)newDraft();return vNew();}
@@ -351,13 +384,13 @@ function route(){
 }
 function nav(on){
   function a(k,href,ic,lab){return'<a href="'+href+'" class="'+(on===k?'on':'')+'"'+(on===k?' aria-current="page"':'')+'>'+ic+lab+'</a>';}
-  return'<nav class="nav">'+a('home','#home',I.home,'Today')+a('herd','#herd',I.tag,'Heifers')+a('history','#history',I.clock,'History')+'</nav>';
+  return'<nav class="nav">'+a('home','#home',I.home,'Today')+a('herd','#herd',I.tag,'Heifers')+a('breed','#breeding',I.heart,'Breeding')+a('history','#history',I.clock,'History')+a('manage','#manage',I.gear,'Manage')+'</nav>';
 }
 function sessionCard(s){
   var st=stats(s);var fin=!!s.finishedAt;
   var dp=st.total?st.done/st.total*100:0,kp=st.total?st.skip/st.total*100:0;
   return'<button class="scard" data-open="'+s.id+'">'+
-    '<span class="row" style="justify-content:space-between;width:100%"><span class="k">'+esc(s.type)+' · '+esc(fmtShort(s.date))+'</span><span class="badge '+(fin?'fin':'live')+'">'+(fin?'Finished':'In progress')+'</span></span>'+
+    '<span class="row" style="justify-content:space-between;width:100%"><span class="k">'+esc(typeLabel(s.type))+' · '+esc(fmtShort(s.date))+'</span><span class="badge '+(fin?'fin':'live')+'">'+(fin?'Finished':'In progress')+'</span></span>'+
     '<span class="nm">'+esc(s.name)+'</span>'+
     '<span class="mini"><i style="width:'+dp+'%"></i><i class="sk" style="width:'+kp+'%"></i></span>'+
     '<span class="small muted">'+st.done+' done'+(st.skip?' · '+st.skip+' skipped':'')+' · <b style="color:var(--ink)">'+st.left+' left</b> of '+st.total+'</span>'+
@@ -378,8 +411,8 @@ function vHome(){
   h+='<button class="btn primary block" id="newBtn" style="height:60px;font-size:18px">'+I.plus+'New treatment</button>';
   var rems=db.rem.filter(function(r){return r.on;}).sort(function(a,b){return remInfo(a).n-remInfo(b).n;});
   h+='<div class="stack"><div class="row" style="justify-content:space-between"><div class="label">Reminders</div><a href="#rem" class="small" style="color:var(--g);font-weight:600">Manage</a></div>'+(rems.length?'<div class="list">'+rems.map(remRow).join('')+'</div>':'<a href="#rem" class="card small muted" style="text-decoration:none">No reminders on. Tap to set them up.</a>')+'</div>';
-  var ba=breedAlerts();
-  if(ba.length)h+='<div class="stack"><div class="label">Breeding</div><div class="list">'+ba.map(function(a){var c=a.k==='check'?'var(--amber)':a.k==='late'?'var(--red)':'var(--g)';return'<a class="li" style="text-decoration:none;color:inherit" href="#tag-'+encodeURIComponent(a.no)+'"><span class="rdot" style="background:'+c+'"></span><span class="tg" style="min-width:58px">'+esc(a.no)+'</span><span class="grow small" style="font-weight:600;color:'+c+'">'+esc(a.txt)+'</span>'+I.chev+'</a>';}).join('')+'</div></div>';
+  var G=breedGroups();var hb=[].concat(G.heat.filter(function(x){return x.hot;}).map(function(x){return[x,'var(--red)'];}),G.late.map(function(x){return[x,'var(--red)'];}),G.check.map(function(x){return[x,'var(--amber)'];}),G.calv.filter(function(x){return x.n<=14;}).map(function(x){return[x,'#9B2C66'];}),G.soon7.map(function(x){return[x,'var(--amber)'];}));
+  if(hb.length)h+='<div class="stack"><div class="row" style="justify-content:space-between"><div class="label">Breeding — needs attention</div><a href="#breeding" class="small" style="color:var(--g);font-weight:600">See all</a></div><div class="list">'+hb.slice(0,6).map(function(x){x[0].hot=true;return breedRow(x[0],x[1]);}).join('')+'</div></div>';
   if(live.length){h+='<div class="stack"><div class="label">In progress</div>'+live.map(sessionCard).join('')+'</div>';}
   if(fin.length){h+='<div class="stack"><div class="row" style="justify-content:space-between"><div class="label">Recent</div><a href="#history" class="small" style="color:var(--g);font-weight:600">See all</a></div>'+fin.map(sessionCard).join('')+'</div>';}
   h+='</div>'+nav('home')+'</div>';
@@ -427,8 +460,11 @@ function ageMonths(t){
 function lastWeight(t){if(!t||!t.weights||!t.weights.length)return null;return t.weights.slice().sort(function(a,b){return(a.d||'').localeCompare(b.d||'')||(a.at||0)-(b.at||0);})[t.weights.length-1];}
 function addWeight(no,kg,d,sid){var t=getTag(no);if(!t)return;t.weights=t.weights||[];t.weights.push({kg:kg,d:d||todayISO(),sid:sid||null,at:Date.now()});}
 function removeWeight(no,sid){var t=getTag(no);if(!t||!t.weights)return;t.weights=t.weights.filter(function(w){return w.sid!==sid;});}
+function addMonths(iso,n){var p=iso.split('-');var d=new Date(+p[0],+p[1]-1-n,+p[2]);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function fmtKg(v){return(Math.round(v*10)/10)+' kg';}
-function sheds(){var m={};db.tags.forEach(function(t){if(t.shed)m[t.shed]=(m[t.shed]||0)+1;});return Object.keys(m).sort(cmp);}
+function sheds(){var m={};(db.sheds||[]).forEach(function(x){m[x]=1;});db.tags.forEach(function(t){if(t.shed&&!t.removed)m[t.shed]=1;});return Object.keys(m).sort(cmp);}
+function shedCount(x){return db.tags.filter(function(t){return!t.removed&&t.shed===x;}).length;}
+var pendingCalf=null;
 
 /* ---------- dates ---------- */
 function addDays(iso,n){var p=iso.split('-');var d=new Date(+p[0],+p[1]-1,+p[2]+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -522,47 +558,138 @@ function remRow(r){
   return'<div class="li"><span class="rdot" style="background:'+remColor(i)+'"></span><span class="grow"><span style="display:block;font-weight:600">'+esc(r.label)+'</span><span class="sub" style="color:'+remColor(i)+';font-weight:600">'+esc(remDueTxt(i))+'</span></span><button class="btn sm" data-start="'+esc(r.id)+'">Start</button></div>';
 }
 function bindRem(root){$all('[data-start]',root).forEach(function(b){b.addEventListener('click',function(){var r=db.rem.filter(function(x){return x.id===b.dataset.start;})[0];if(r)startRem(r);});});}
-function vRem(){
-  var h='<div class="view"><div class="top"><button class="iconbtn" id="bk" aria-label="Back">'+I.back+'</button><h1>Reminders</h1></div><div class="content" style="gap:14px">'+
-  '<p class="small muted" style="margin:0">The next date is counted from the last time you did it in this app. Tap <b>Add to phone calendar</b> to also get a phone notification.</p>';
-  db.rem.forEach(function(r){
-    var i=remInfo(r);
-    h+='<div class="card stack" style="gap:10px;'+(r.on?'':'opacity:.6')+'"><div class="row" style="justify-content:space-between"><span style="font:700 19px var(--head)">'+esc(r.label)+'</span><span class="badge '+(r.on?'live':'fin')+'">'+(r.on?'On':'Off')+'</span></div>'+
-    '<span class="small muted">Every '+r.days+' days · '+(r.type==='Activity'?'Other activity':esc(r.type))+(r.name?' · '+esc(r.name):'')+'</span>'+
-    '<span class="small">Last done: <b>'+(i.last?esc(fmtDate(i.last)):'never')+'</b></span>'+
-    '<span class="small" style="color:'+remColor(i)+';font-weight:700">'+esc(remDueTxt(i))+'</span>'+
-    '<div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn sm primary" data-start="'+esc(r.id)+'">Start now</button><button class="btn sm" data-ics="'+esc(r.id)+'">Add to phone calendar</button><button class="btn sm" data-edit="'+esc(r.id)+'">Edit</button></div></div>';
-  });
-  h+='<button class="btn block" id="addRem">'+I.plus+'Add a reminder</button></div></div>';
+function manageTabs(on){
+  var T=[['rem','#rem','Reminders'],['sheds','#sheds','Sheds & pens'],['backup','#backup','Backup']];
+  return'<div class="tabs" style="grid-template-columns:repeat(3,minmax(0,1fr))" role="tablist">'+T.map(function(x){return'<a class="tab'+(on===x[0]?' on':'')+'" role="tab" aria-selected="'+(on===x[0])+'" href="'+x[1]+'" style="display:flex;align-items:center;justify-content:center;text-decoration:none">'+x[2]+'</a>';}).join('')+'</div>';
+}
+function vManage(tab){
+  var h='<div class="view"><div class="top">'+LOGO+'<h1>Manage</h1></div><div class="content" style="gap:14px">'+manageTabs(tab);
+  if(tab==='rem'){
+    h+='<p class="small muted" style="margin:0">Each reminder counts from the last time that treatment was done in this app. Use <b>Add to phone calendar</b> to also get a phone notification.</p>';
+    db.rem.forEach(function(r){
+      var i=remInfo(r);
+      h+='<div class="card stack" style="gap:10px;'+(r.on?'':'opacity:.6')+'"><div class="row" style="justify-content:space-between"><span style="font:700 19px var(--head)">'+esc(r.label)+'</span><span class="badge '+(r.on?'live':'fin')+'">'+(r.on?'On':'Off')+'</span></div>'+
+      '<span class="small muted">Every '+r.days+' days · '+esc(typeLabel(r.type))+' · '+(r.name?esc(r.name):'any name')+'</span>'+
+      '<span class="small">Last done: <b>'+(i.last?esc(fmtDate(i.last)):'never')+'</b></span>'+
+      '<span class="small" style="color:'+remColor(i)+';font-weight:700">'+esc(remDueTxt(i))+'</span>'+
+      '<div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn sm primary" data-start="'+esc(r.id)+'">Start now</button><button class="btn sm" data-ics="'+esc(r.id)+'">Add to phone calendar</button><button class="btn sm" data-edit="'+esc(r.id)+'">Edit</button><button class="btn sm" data-rdel="'+esc(r.id)+'" style="color:var(--red)">Delete</button></div></div>';
+    });
+    h+='<button class="btn block" id="addRem">'+I.plus+'Add a reminder</button>';
+  }else if(tab==='sheds'){
+    var list=sheds();
+    h+='<p class="small muted" style="margin:0">These names show up as quick choices on each heifer\'s page.</p>'+
+    '<div class="addrow"><input class="input" id="shIn" placeholder="New shed or pen name" autocomplete="off" enterkeyhint="done"><button class="btn primary" id="shAdd" style="width:84px">Add</button></div>';
+    h+=list.length?'<div class="list">'+list.map(function(x){var c=shedCount(x);return'<div class="li"><span class="grow"><span style="display:block;font-weight:600">'+esc(x)+'</span><a class="sub" href="#herd" data-sgo="'+esc(x)+'" style="color:var(--g)">'+c+' heifer'+(c===1?'':'s')+'</a></span><button class="btn sm" data-sren="'+esc(x)+'">Edit</button><button class="btn sm" data-sdel="'+esc(x)+'" style="color:var(--red)">Delete</button></div>';}).join('')+'</div>':'<div class="card small muted">No sheds yet. Add your first one above.</div>';
+  }else{
+    h+='<div class="card stack" style="gap:12px"><p class="small muted" style="margin:0">Everything (heifers, treatments, photos) is saved on this phone only. Download a backup now and then, or to move to a new phone.</p>'+backupButtons()+'</div>'+
+    '<div class="small muted">'+act().length+' heifers · '+db.sessions.length+' treatments saved on this phone.</div>';
+  }
+  h+='</div>'+nav('manage')+'</div>';
   app.innerHTML=h;
-  $('#bk').addEventListener('click',function(){go('#home');});
-  bindRem(app);
-  function find(id){return db.rem.filter(function(x){return x.id===id;})[0];}
-  $all('[data-ics]').forEach(function(b){b.addEventListener('click',function(){icsDownload(find(b.dataset.ics));});});
-  $all('[data-edit]').forEach(function(b){b.addEventListener('click',function(){remSheet(find(b.dataset.edit));});});
-  $('#addRem').addEventListener('click',function(){remSheet(null);});
+  if(tab==='rem'){
+    bindRem(app);
+    function find(id){return db.rem.filter(function(x){return x.id===id;})[0];}
+    $all('[data-ics]').forEach(function(b){b.addEventListener('click',function(){icsDownload(find(b.dataset.ics));});});
+    $all('[data-edit]').forEach(function(b){b.addEventListener('click',function(){remSheet(find(b.dataset.edit));});});
+    $all('[data-rdel]').forEach(function(b){b.addEventListener('click',function(){var r=find(b.dataset.rdel);
+      confirmSheet('Delete “'+r.label+'” reminder?','Your treatment records stay. You can add it again any time.','Delete',true,function(){var i=db.rem.indexOf(r);db.rem.splice(i,1);save();route();toast('Reminder deleted',function(){db.rem.splice(i,0,r);save();route();});});});});
+    $('#addRem').addEventListener('click',function(){remSheet(null);});
+  }else if(tab==='sheds'){
+    var inp=$('#shIn');
+    function add(){var v=norm(inp.value);if(!v)return;if(sheds().some(function(x){return x.toLowerCase()===v.toLowerCase();})){toast(v+' already exists');return;}db.sheds=db.sheds||[];db.sheds.push(v);save();route();toast('Added '+v);}
+    $('#shAdd').addEventListener('click',add);inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();add();}});
+    $all('[data-sgo]').forEach(function(a){a.addEventListener('click',function(){herdShed=a.dataset.sgo;});});
+    $all('[data-sren]').forEach(function(b){b.addEventListener('click',function(){var old=b.dataset.sren;
+      openSheet('<h2>Rename shed</h2><div class="stack" style="margin-top:12px"><input class="input" id="srn" value="'+esc(old)+'" autocomplete="off"><span class="small muted">'+shedCount(old)+' heifer(s) in this shed will be updated.</span><button class="btn primary block" id="srnOk">Save</button><button class="btn block" data-close>Cancel</button></div>',function(sh){
+        $('#srnOk',sh).addEventListener('click',function(){var v=norm($('#srn',sh).value);if(!v)return;
+          db.sheds=(db.sheds||[]).filter(function(x){return x!==old&&x!==v;});db.sheds.push(v);
+          db.tags.forEach(function(t){if(t.shed===old)t.shed=v;});save();closeSheet();route();toast('Renamed to '+v);});
+      });});});
+    $all('[data-sdel]').forEach(function(b){b.addEventListener('click',function(){var x=b.dataset.sdel;var c=shedCount(x);
+      confirmSheet('Delete “'+x+'”?',c?c+' heifer(s) are in this shed. They will stay in your heifers but with no shed set.':'No heifers are in this shed.','Delete shed',true,function(){
+        var moved=db.tags.filter(function(t){return t.shed===x;});moved.forEach(function(t){t.shed='';});db.sheds=(db.sheds||[]).filter(function(z){return z!==x;});save();route();
+        toast('Deleted '+x,function(){moved.forEach(function(t){t.shed=x;});db.sheds.push(x);save();route();});});});});
+  }else bindBackup(app);
 }
 function remSheet(r){
   var isNew=!r;var x=r||{id:uid(),label:'',type:'Vaccination',name:'',match:'',days:30,on:true};
-  var typ=x.type;
+  var typ=x.type,nm=x.name||'';
+  function names(t){var m={};presetNames(t).forEach(function(n){m[n]=1;});(db.custom[t]||[]).forEach(function(n){m[n]=1;});db.sessions.forEach(function(s){if(s.type===t)m[s.name]=1;});if(nm&&t===typ)m[nm]=1;return Object.keys(m);}
   openSheet('<h2>'+(isNew?'New reminder':'Edit reminder')+'</h2><div class="stack" style="margin-top:12px">'+
-  '<label class="label" for="rmL">Name</label><input class="input" id="rmL" value="'+esc(x.label)+'" placeholder="e.g. FMD vaccine" autocomplete="off">'+
+  '<div class="label">Type</div><div class="chips" id="rmT"></div>'+
+  '<div class="label">Which one?</div><div class="chips" id="rmN"></div>'+
+  '<span class="small muted" id="rmHint"></span>'+
+  '<label class="label" for="rmL">Reminder name</label><input class="input" id="rmL" value="'+esc(x.label)+'" placeholder="e.g. FMD booster" autocomplete="off">'+
   '<label class="label" for="rmD">Repeat every (days)</label><input class="input" id="rmD" inputmode="numeric" value="'+esc(String(x.days))+'">'+
-  (isNew?'<div class="label">Type</div><div class="chips">'+TYPES.map(function(t){return'<button class="chip '+(typ===t?'on':'')+'" data-rt="'+t+'">'+(t==='Activity'?'Other activity':t)+'</button>';}).join('')+'</div>':'')+
   '<label class="row" style="gap:10px;font-weight:600;min-height:44px"><input type="checkbox" id="rmOn" '+(x.on?'checked':'')+' style="width:22px;height:22px;accent-color:var(--g)"> Reminder is on</label>'+
   '<button class="btn primary block" id="rmOk">Save</button>'+
   (!isNew?'<button class="btn danger block" id="rmDel">Delete reminder</button>':'')+
   '<button class="btn block" data-close>Cancel</button></div>',function(sh){
-    $all('[data-rt]',sh).forEach(function(c){c.addEventListener('click',function(){typ=c.dataset.rt;$all('[data-rt]',sh).forEach(function(z){z.classList.toggle('on',z===c);});});});
+    var labelTouched=!isNew;
+    $('#rmL',sh).addEventListener('input',function(){labelTouched=true;});
+    function draw(){
+      $('#rmT',sh).innerHTML=TYPES.map(function(t){return'<button type="button" class="chip '+(typ===t?'on':'')+'" data-rt="'+t+'">'+esc(typeLabel(t))+'</button>';}).join('');
+      $('#rmN',sh).innerHTML='<button type="button" class="chip '+(!nm?'on':'')+'" data-rn="">Any '+esc(typeLabel(typ).toLowerCase())+'</button>'+names(typ).map(function(n){return'<button type="button" class="chip '+(nm===n?'on':'')+'" data-rn="'+esc(n)+'">'+esc(n)+'</button>';}).join('');
+      $('#rmHint',sh).textContent=nm?'Counts from the last “'+nm+'” you did.':'Counts from the last '+typeLabel(typ).toLowerCase()+' of any name.';
+      $all('[data-rt]',sh).forEach(function(c){c.addEventListener('click',function(){if(typ!==c.dataset.rt){typ=c.dataset.rt;nm='';if(!labelTouched)$('#rmL',sh).value=typeLabel(typ);draw();}});});
+      $all('[data-rn]',sh).forEach(function(c){c.addEventListener('click',function(){nm=c.dataset.rn;if(!labelTouched)$('#rmL',sh).value=nm||typeLabel(typ);draw();});});
+    }
+    draw();
     $('#rmOk',sh).addEventListener('click',function(){
-      var l=norm($('#rmL',sh).value),d=parseInt($('#rmD',sh).value,10);
-      if(!l){toast('Type a name');return;}if(!(d>0)){toast('Type the number of days');return;}
+      var l=norm($('#rmL',sh).value)||nm||typeLabel(typ),d=parseInt($('#rmD',sh).value,10);
+      if(!(d>0)){toast('Type the number of days');return;}
+      var changed=(typ!==x.type||nm!==(x.name||''));
       x.label=l;x.days=d;x.on=$('#rmOn',sh).checked;
-      if(isNew){x.type=typ;x.name=l;x.match=l.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');db.rem.push(x);}
+      if(changed||isNew){x.type=typ;x.name=nm;x.match=nm?'^'+nm.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'$':'';}
+      if(isNew)db.rem.push(x);
       save();closeSheet();route();
     });
     var del=$('#rmDel',sh);if(del)del.addEventListener('click',function(){db.rem=db.rem.filter(function(z){return z!==r;});save();closeSheet();route();});
   });
+}
+
+/* ---------- BREEDING ---------- */
+function breedGroups(){
+  var today=todayISO(),G={heat:[],check:[],soon7:[],feed:[],calv:[],late:[]};
+  act().forEach(function(t){
+    if(t.sex==='Male')return;
+    if(t.preg==='insem'&&t.aiDate){
+      var d=daysBetween(t.aiDate,today);
+      if(d>=14&&d<=24)G.heat.push({t:t,n:d,txt:d<17?'Heat watch starts '+fmtShort(addDays(t.aiDate,17))+' ('+inDaysTxt(17-d)+')':'Day '+d+' after AI — watch for heat until '+fmtShort(addDays(t.aiDate,24)),hot:d>=17});
+      if(d>=45)G.check.push({t:t,n:d,txt:d+' days since AI'+(d>=60?' — overdue':''),hot:d>=60});
+    }
+    if(t.preg==='pregnant'){
+      var dc=dueCalving(t);var start=dc?addDays(dc,-GEST):null;var dp=start?daysBetween(start,today):null;
+      if(dp!=null){
+        var d7=213-dp;
+        if(d7>0&&d7<=21)G.soon7.push({t:t,n:d7,txt:'Reaches 7 months '+fmtShort(addDays(today,d7))+' ('+inDaysTxt(d7)+') — get feed ready'});
+        if(d7<=0&&dc>=today)G.feed.push({t:t,n:daysBetween(today,dc),txt:Math.floor(dp/30.4)+' months · calving '+fmtShort(dc)+' ('+inDaysTxt(daysBetween(today,dc))+')'});
+      }
+      if(dc){var n=daysBetween(today,dc);if(n<0)G.late.push({t:t,n:n,txt:'Expected '+fmtShort(dc)+' — '+(-n)+' days overdue',hot:true});else if(n<=60)G.calv.push({t:t,n:n,txt:'Calving '+fmtShort(dc)+' ('+inDaysTxt(n)+')',hot:n<=14});}
+    }
+  });
+  Object.keys(G).forEach(function(k){G[k].sort(function(a,b){return k==='check'||k==='heat'?b.n-a.n:a.n-b.n;});});
+  return G;
+}
+function breedRow(x,color){return'<a class="li" style="text-decoration:none;color:inherit" href="#tag-'+encodeURIComponent(x.t.no)+'"><span class="tg" style="min-width:64px;display:flex;align-items:center;gap:4px">'+EAR.replace('class="ear"','class="ear" width="16" height="16"')+esc(x.t.no)+'</span><span class="grow small" style="font-weight:600;color:'+(x.hot?color:'var(--ink)')+'">'+esc(x.txt)+'</span>'+I.chev+'</a>';}
+function vBreeding(){
+  var G=breedGroups();var A=act().filter(function(t){return t.sex!=='Male';});
+  var cnt={pregnant:0,insem:0,empty:0,none:0};A.forEach(function(t){cnt[t.preg||'none']=(cnt[t.preg||'none']||0)+1;});
+  var S=[['heat','Heat watch · day 17–24 after AI','Repeat heat can show on days 17–24. Watch these heifers closely.','var(--red)'],
+         ['check','Pregnancy check due','Inseminated 45+ days ago and not confirmed yet.','var(--amber)'],
+         ['late','Calving overdue','Past the expected calving date.','var(--red)'],
+         ['calv','Calving in the next 60 days','','#9B2C66'],
+         ['soon7','Reaching 7 months soon','Start special (close-up) feed at 7 months.','var(--amber)'],
+         ['feed','7+ months pregnant — special feed','','#9B2C66']];
+  var h='<div class="view"><div class="top">'+LOGO+'<h1>Breeding</h1></div><div class="content" style="gap:18px">'+
+  '<div class="bstat"><a href="#herd" data-bf="pregnant"><b>'+cnt.pregnant+'</b><span>Pregnant</span></a><a href="#herd" data-bf="insem"><b>'+cnt.insem+'</b><span>Inseminated</span></a><a href="#herd" data-bf="empty"><b>'+cnt.empty+'</b><span>Empty</span></a></div>';
+  var any=false;
+  S.forEach(function(x){var L=G[x[0]];if(!L.length)return;any=true;
+    h+='<div class="stack"><div class="label">'+esc(x[1])+' ('+L.length+')</div>'+(x[2]?'<span class="small muted" style="margin-top:-4px">'+esc(x[2])+'</span>':'')+'<div class="list">'+L.map(function(r){return breedRow(r,x[3]);}).join('')+'</div></div>';});
+  if(!any)h+='<div class="card stack" style="gap:8px"><b>Nothing to watch right now</b><span class="small muted">This page fills in from each heifer\'s breeding data. To start: open a heifer and set her to <b>Inseminated</b> with the AI date, or <b>Pregnant</b>. Or run an <b>Insemination (AI)</b> or <b>Pregnancy check</b> treatment — tapping a heifer there updates her automatically.</span></div>';
+  h+='</div>'+nav('breed')+'</div>';
+  app.innerHTML=h;
+  $all('[data-bf]').forEach(function(a){a.addEventListener('click',function(){herdSt=a.dataset.bf;herdShed='';});});
 }
 
 /* ---------- HERD ---------- */
@@ -575,7 +702,7 @@ function vHerd(){
   '<div class="addrow"><input class="input" id="addIn" inputmode="numeric" placeholder="e.g. 1042" autocomplete="off" enterkeyhint="done"><button class="btn primary" id="addBtn" style="width:84px">Add</button></div>'+
   '<div class="row" style="flex-wrap:wrap;gap:8px"><a href="#tag-new" class="btn sm" style="text-decoration:none">'+I.plus.replace('<svg','<svg width="18" height="18"')+'Add with details</a><button class="btn sm" id="pasteBtn">Paste a long list</button></div></div>'+
   '<div class="search" id="hs">'+I.search+'<input id="hq" inputmode="numeric" placeholder="Find tag number" aria-label="Find tag number" value="'+esc(herdQ)+'" autocomplete="off"><button class="clear" id="hqc" aria-label="Clear search">'+I.x+'</button></div>'+
-  (function(){var nr=db.tags.filter(function(t){return t.removed;}).length;var opts=[['','All'],['pregnant','Pregnant'],['insem','Inseminated'],['empty','Empty']];if(nr)opts.push(['removed','Removed ('+nr+')']);return'<div class="chips" style="flex-wrap:nowrap;overflow-x:auto;margin:0 -20px;padding:0 20px 2px">'+opts.map(function(o){return'<button class="chip '+(herdSt===o[0]?'on':'')+'" style="white-space:nowrap" data-hst="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div>';})()+
+  (function(){var nr=db.tags.filter(function(t){return t.removed;}).length;var opts=[['','All'],['f','Female'],['m','Male'],['pregnant','Pregnant'],['insem','Inseminated'],['empty','Empty']];if(nr)opts.push(['removed','Removed ('+nr+')']);return'<div class="chips" style="flex-wrap:nowrap;overflow-x:auto;margin:0 -20px;padding:0 20px 2px">'+opts.map(function(o){return'<button class="chip '+(herdSt===o[0]?'on':'')+'" style="white-space:nowrap" data-hst="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div>';})()+
   (sh.length?'<div class="chips" id="shedChips"><button class="chip '+(!herdShed?'on':'')+'" data-shed="">All</button>'+sh.map(function(x){return'<button class="chip '+(herdShed===x?'on':'')+'" data-shed="'+esc(x)+'">'+esc(x)+'</button>';}).join('')+'</div>':'')+
   '<div class="small muted" id="hcount"></div>'+
   '</div><div class="grid" id="hg" style="padding-top:12px;padding-bottom:24px;flex:1"></div>'+nav('herd')+'</div>';
@@ -597,7 +724,7 @@ function vHerd(){
   var q=$('#hq');
   q.addEventListener('input',function(){herdQ=q.value;drawHerd();});
   $('#hqc').addEventListener('click',function(){herdQ='';q.value='';drawHerd();q.focus();});
-  $('#bk').addEventListener('click',backupSheet);
+  $('#bk').addEventListener('click',function(){go('#backup');});
   $all('[data-shed]').forEach(function(c){c.addEventListener('click',function(){herdShed=c.dataset.shed;$all('[data-shed]').forEach(function(x){x.classList.toggle('on',x===c);});drawHerd();});});
   $all('[data-hst]').forEach(function(c){c.addEventListener('click',function(){herdSt=c.dataset.hst;$all('[data-hst]').forEach(function(x){x.classList.toggle('on',x===c);});drawHerd();});});
   drawHerd();
@@ -605,7 +732,7 @@ function vHerd(){
     $('#hs').classList.toggle('has',!!herdQ);
     var ql=herdQ.trim().toLowerCase();
     var list=db.tags.filter(function(t){
-      if(herdSt==='removed'){if(!t.removed)return false;}else{if(t.removed)return false;if(herdSt&&(t.preg||'')!==herdSt)return false;}
+      if(herdSt==='removed'){if(!t.removed)return false;}else{if(t.removed)return false;if(herdSt==='f'){if(t.sex!=='Female')return false;}else if(herdSt==='m'){if(t.sex!=='Male')return false;}else if(herdSt&&(t.preg||'')!==herdSt)return false;}
       if(herdShed&&t.shed!==herdShed)return false;
       return!ql||t.no.toLowerCase().indexOf(ql)>=0||(t.note||'').toLowerCase().indexOf(ql)>=0||(t.shed||'').toLowerCase().indexOf(ql)>=0;
     }).sort(function(a,b){if(ql){var ae=a.no.toLowerCase()===ql?0:a.no.toLowerCase().indexOf(ql)===0?1:2,be=b.no.toLowerCase()===ql?0:b.no.toLowerCase().indexOf(ql)===0?1:2;if(ae!==be)return ae-be;}return cmp(a.no,b.no);});
@@ -613,7 +740,7 @@ function vHerd(){
     var g=$('#hg');
     if(!db.tags.length){g.innerHTML='<div class="empty"><div class="big">'+I.tag+'</div><h3>No heifers yet</h3><span>Type a tag number above and tap Add.</span></div>';return;}
     if(!list.length){g.innerHTML='<div class="empty"><h3>No tag “'+esc(herdQ.trim())+'”</h3>'+(ql?'<button class="btn primary" id="addQ">Add '+esc(herdQ.trim())+'</button>':'')+'</div>';var aq=$('#addQ');if(aq)aq.addEventListener('click',function(){doAdd(herdQ);herdQ='';q.value='';drawHerd();});return;}
-    g.innerHTML=list.map(function(t){var sub=t.removed?t.removed.r:t.preg==='pregnant'?pregLabel(t):tagSub(t.no);return'<a class="tile'+(t.removed?' gone':t.preg==='pregnant'?' preg':'')+'" href="#tag-'+encodeURIComponent(t.no)+'" style="text-decoration:none;color:inherit">'+(t.sex==='Male'?'<span class="sexm" aria-label="Male">M</span>':'')+'<span class="no">'+esc(t.no)+'</span><span class="nt">'+(sub?esc(sub):'&nbsp;')+'</span></a>';}).join('');
+    g.innerHTML=list.map(function(t){var sub=t.removed?t.removed.r:shortPreg(t)||tagSub(t.no);return'<a class="tile'+tileCls(t)+'" href="#tag-'+encodeURIComponent(t.no)+'" style="text-decoration:none;color:inherit">'+tileIn(t.no,sub)+'</a>';}).join('');
   }
 }
 
@@ -622,13 +749,15 @@ function vTag(no){
   var isNew=no==='new';
   var t=isNew?{no:'',note:'',sex:'Female'}:getTag(no);
   if(!t){go('#herd');return;}
-  var f={no:t.no,sex:t.sex||'',birth:t.birth||'',ageM:t.ageM!=null?t.ageM:'',shed:t.shed||'',note:t.note||'',kg:''};
+  var bEst=!t.birth&&t.ageM!=null&&t.ageM!==''?addMonths(todayISO(),ageMonths(t)):'';var approx=!!(t.birthApprox||bEst);
+  var f={no:t.no,sex:t.sex||'',birth:t.birth||bEst,ageM:t.ageM!=null?t.ageM:'',shed:t.shed||'',note:t.note||'',kg:''};
   var lw=lastWeight(t);
   var photo={changed:false,data:null};
   var age=ageMonths(t);
   var sh=sheds();
   var h='<div class="view"><div class="top"><button class="iconbtn" id="bk" aria-label="Back">'+I.back+'</button><h1>'+(isNew?'New heifer':'Tag '+esc(t.no))+'</h1></div>'+
   '<div class="content" style="gap:18px;padding-bottom:110px">'+
+  (pendingCalf&&pendingCalf===t.no?'<div class="card" style="background:#FFF6D6;border-color:#F2C230"><b>New calf — please complete its details</b><span class="sub" style="display:block;margin-top:4px">Check sex, birth date, shed, weight and photo, then tap Save.</span></div>':'')+
   (t.removed?'<div class="card row" style="gap:12px;background:var(--redl);border-color:#F5C2BC"><span class="grow"><b style="color:var(--red)">Removed '+esc(fmtDate(t.removed.d))+'</b><span class="sub" style="display:block">'+esc(t.removed.r)+'</span></span><button class="btn sm" id="restore">Restore</button></div>':'')+
   '<div class="row" style="gap:16px;align-items:center"><label class="photo" data-photo for="ph">'+I.camera+'<span>Add photo</span></label><input type="file" id="ph" accept="image/*" class="sr">'+
   '<div class="stack" style="gap:4px;flex:1;min-width:0"><span class="small muted">'+(isNew?'Photo is optional':'Tap the photo to change it')+'</span>'+
@@ -637,13 +766,28 @@ function vTag(no){
   '<div class="stack"><label class="label" for="fNo">Tag number</label><input class="input" id="fNo" inputmode="numeric" value="'+esc(f.no)+'" placeholder="e.g. 1042" autocomplete="off" style="font:700 20px var(--head)"></div>'+
   '<div class="stack"><div class="label">Male / Female <span style="text-transform:none;font-weight:500">(optional)</span></div><div class="chips">'+['Female','Male'].map(function(x){return'<button class="chip '+(f.sex===x?'on':'')+'" data-sex="'+x+'">'+x+'</button>';}).join('')+'</div></div>'+
   '<div class="types"><div class="stack"><label class="label" for="fBirth">Birth date</label><input class="input" type="date" id="fBirth" value="'+esc(f.birth)+'"></div>'+
-  '<div class="stack"><label class="label" for="fAge">Age (months)</label><input class="input" id="fAge" inputmode="numeric" value="'+esc(f.birth?(age!=null?age:''):f.ageM)+'" placeholder="e.g. 14" '+(f.birth?'disabled':'')+'></div></div>'+
-  '<span class="small muted" id="ageTxt" style="margin-top:-10px">'+(f.birth?'Age is worked out from the birth date: '+esc(fmtAge(age)):'No birth date? Type the approximate age in months — it will keep counting up.')+'</span>'+
+  '<div class="stack"><label class="label" for="fAge">Age (months)</label><input class="input" id="fAge" inputmode="numeric" value="'+esc(age!=null?String(age):'')+'" placeholder="e.g. 14"></div></div>'+
+  '<span class="small muted" id="ageTxt" style="margin-top:-10px"></span>'+
   '<div class="stack"><label class="label" for="fMom">Mother tag (optional)</label><div class="addrow"><input class="input" id="fMom" inputmode="numeric" value="'+esc(t.mother||'')+'" placeholder="e.g. 1042" autocomplete="off"><button type="button" class="btn" id="viewMom" style="white-space:nowrap">View mother</button></div><span class="small muted" id="momTxt"></span></div>'+
-  '<div class="stack"><label class="label" for="fKg">Current weight (kg)</label><input class="input" id="fKg" inputmode="decimal" placeholder="'+(lw?esc(String(lw.kg)):'e.g. 280')+'" autocomplete="off">'+
-  (lw?'<span class="small muted">Last: '+esc(fmtKg(lw.kg))+' on '+esc(fmtDate(lw.d))+'. Type a new weight to add today\'s reading.</span>':'')+'</div>'+
+  (function(){
+    var ws=(t.weights||[]).slice().sort(function(a,b){return(a.d||'').localeCompare(b.d||'')||(a.at||0)-(b.at||0);});
+    var x='<div class="sect" id="wSec"><div class="sect-h">Weight</div>';
+    if(lw){var ago=daysBetween(lw.d,todayISO());x+='<div class="row" style="gap:14px;align-items:center"><span class="kgbig">'+esc(fmtKg(lw.kg))+'</span><span class="small muted" style="line-height:1.4"><b style="color:var(--ink)">Current weight</b><br>Measured '+esc(fmtDate(lw.d))+(ago>0?' ('+ago+' day'+(ago>1?'s':'')+' ago)':' (today)')+'</span></div>';}
+    else x+='<span class="small muted">No weight recorded yet.</span>';
+    x+='<div class="types"><div class="stack" style="gap:6px"><label class="small muted" for="fKg">New weight (kg)</label><input class="input" id="fKg" inputmode="decimal" placeholder="e.g. 280" autocomplete="off"></div><div class="stack" style="gap:6px"><label class="small muted" for="fKgD">Measured on</label><input class="input" type="date" id="fKgD" value="'+todayISO()+'"></div></div>';
+    if(!isNew)x+='<button type="button" class="btn sm primary" id="kgAdd" style="align-self:flex-start">'+I.plus.replace('<svg','<svg width="18" height="18"')+'Add weight</button>';
+    if(ws.length){
+      x+='<div class="label" style="margin-top:4px">All weights ('+ws.length+')</div><div class="list">';
+      for(var i=ws.length-1;i>=0;i--){var w=ws[i],pv=ws[i-1];var ch='';
+        if(pv){var dk=Math.round((w.kg-pv.kg)*10)/10,dd=daysBetween(pv.d,w.d);ch='<span class="small" style="font-weight:700;color:'+(dk>=0?'var(--g)':'var(--red)')+'">'+(dk>=0?'+':'')+dk+' kg'+(dd>0?' <span class="muted" style="font-weight:500">in '+dd+' d</span>':'')+'</span>';}
+        var src=w.sid&&getS(w.sid)?getS(w.sid).name:'Added on this page';
+        x+='<div class="li"><span class="grow"><span style="display:block;font:700 18px var(--head)">'+esc(fmtKg(w.kg))+(i===ws.length-1?' <span class="badge live" style="vertical-align:3px">Current</span>':'')+'</span><span class="sub">'+esc(fmtDate(w.d))+' · '+esc(src)+'</span></span>'+ch+'<button type="button" class="iconbtn" data-wdel="'+esc(String(w.at))+'" aria-label="Delete this weight" style="width:36px;height:36px">'+I.x+'</button></div>';}
+      x+='</div>';
+    }
+    return x+'</div>';
+  })()+
   '<div class="stack"><label class="label" for="fShed">Shed / location</label><input class="input" id="fShed" value="'+esc(f.shed)+'" placeholder="e.g. Main heifers area" autocomplete="off">'+
-  (sh.length?'<div class="chips">'+sh.map(function(x){return'<button class="chip '+(f.shed===x?'on':'')+'" data-shedp="'+esc(x)+'">'+esc(x)+'</button>';}).join('')+'</div>':'<div class="chips">'+['Calf pen','Main heifers area','Cows area'].map(function(x){return'<button class="chip" data-shedp="'+esc(x)+'">'+esc(x)+'</button>';}).join('')+'</div>')+'</div>'+
+  '<div class="chips">'+sh.map(function(x){return'<button type="button" class="chip '+(f.shed===x?'on':'')+'" data-shedp="'+esc(x)+'">'+esc(x)+'</button>';}).join('')+'<a class="chip" href="#sheds" style="text-decoration:none;color:var(--g);font-weight:600">Manage sheds</a></div></div>'+
   '';
   var B={preg:t.preg||'',lact:t.lact!=null?+t.lact:0};
   var calfT=t.calf?getTag(t.calf):null;
@@ -652,6 +796,7 @@ function vTag(no){
   '<div class="chips" id="subNot"><button class="chip" data-pg="empty">Empty (open)</button><button class="chip" data-pg="insem">Inseminated, not confirmed</button></div></div>'+
   '<div class="stack" id="aiBox"><label class="label" for="fAi">Last AI date</label><input class="input" type="date" id="fAi" value="'+esc(t.aiDate||'')+'"><span class="small muted" id="aiTxt"></span></div>'+
   '<div class="stack" id="pmBox"><label class="label" for="fPm">Months pregnant</label><input class="input" id="fPm" inputmode="numeric" placeholder="e.g. 4" value="'+esc(pregMonths(t)!=null?String(pregMonths(t)):'')+'"><span class="small muted" id="pmTxt"></span></div>'+
+  ((t.ais&&t.ais.length)?'<div class="stack"><div class="label">AI history ('+t.ais.length+')</div><div class="list">'+t.ais.slice().sort(function(a,b){return(b.d||'').localeCompare(a.d||'');}).map(function(a){return'<div class="li"><span class="grow"><span style="display:block;font-weight:600">'+esc(fmtDate(a.d))+'</span><span class="sub">'+esc(a.semen||'Insemination')+'</span></span></div>';}).join('')+'</div></div>':'')+
   '<div class="stack"><div class="label">Lactation number</div><div class="row" style="gap:12px"><button type="button" class="iconbtn" id="lMinus" aria-label="Decrease lactation" style="font-size:22px;font-weight:700">−</button><span id="lVal" class="lval">0</span><button type="button" class="iconbtn" id="lPlus" aria-label="Increase lactation" style="font-size:22px;font-weight:700">+</button><span class="small muted" id="lTxt" style="flex:1"></span></div></div>'+
   '<div class="stack"><div class="label">Last delivery</div><div class="types"><div class="stack" style="gap:6px"><label class="small muted" for="fCalv">Delivery date</label><input class="input" type="date" id="fCalv" value="'+esc(t.calving||'')+'"></div>'+
   '<div class="stack" style="gap:6px"><label class="small muted" for="fCalf">Calf tag number</label><input class="input" id="fCalf" inputmode="numeric" value="'+esc(t.calf||'')+'" placeholder="e.g. 5003" autocomplete="off"></div></div>'+
@@ -663,8 +808,7 @@ function vTag(no){
   h+='</div>';
   h+='<div class="stack"><label class="label" for="fNote">Notes</label><textarea class="input" id="fNote" rows="2" placeholder="Colour, breed, anything…">'+esc(f.note)+'</textarea></div>';
   if(!isNew){
-    var ws=(t.weights||[]).slice().sort(function(a,b){return(b.d||'').localeCompare(a.d||'')||(b.at||0)-(a.at||0);});
-    if(ws.length)h+='<div class="stack"><div class="label">Weight history</div><div class="list">'+ws.map(function(w,i){return'<div class="li"><span class="tg" style="min-width:96px">'+esc(fmtKg(w.kg))+'</span><span class="grow small muted">'+esc(fmtDate(w.d))+(w.sid&&getS(w.sid)?' · '+esc(getS(w.sid).name):'')+'</span>'+(!w.sid?'<button class="iconbtn" data-wdel="'+(w.at||i)+'" aria-label="Delete this weight" style="width:36px;height:36px">'+I.x+'</button>':'')+'</div>';}).join('')+'</div></div>';
+
     var hist=tagHistory(t.no);
     h+='<div class="stack"><div class="row" style="justify-content:space-between"><div class="label">Treatments ('+hist.length+')</div>'+(hist.length?'<a class="small" href="#history" id="seeH" style="color:var(--g);font-weight:600">Filter in History</a>':'')+'</div>'+
     (hist.length?'<div class="list">'+hist.map(function(s){return histRow(s,t.no);}).join('')+'</div>':'<div class="card small muted">No treatments for this heifer yet.</div>')+'</div>';
@@ -673,7 +817,7 @@ function vTag(no){
   h+='</div><div class="actionbar"><button class="btn primary" id="tSave">'+(isNew?'Save heifer':'Save changes')+'</button></div></div>';
   app.innerHTML=h;
   if(!isNew)fillPhoto(app,t.no);
-  $('#bk').addEventListener('click',function(){go('#herd');});
+  $('#bk').addEventListener('click',function(){if(pendingCalf&&pendingCalf===t.no){confirmSheet('Calf details not saved','You haven\'t saved this calf\'s details yet. Leave anyway?','Leave without saving',false,function(){pendingCalf=null;go('#herd');});return;}go('#herd');});
   $('#ph').addEventListener('change',function(e){var file=e.target.files[0];if(!file)return;
     shrinkImage(file).then(function(d){photo={changed:true,data:d};var el=$('[data-photo]');el.innerHTML='<img src="'+d+'" alt="New photo">';el.classList.add('has');$('#phDel').style.display='';},function(){toast('Could not read that photo');});});
   $('#phDel').addEventListener('click',function(){photo={changed:true,data:null};var el=$('[data-photo]');el.classList.remove('has');el.innerHTML=I.camera+'<span>Add photo</span>';$('#phDel').style.display='none';});
@@ -704,7 +848,7 @@ function vTag(no){
   $('#viewMom').addEventListener('click',function(){var m=norm($('#fMom').value);if(!m)return;
     doSave(function(){if(!getTag(m)){db.tags.push({no:m,note:'',weights:[],sex:'Female',lact:0});db.tags.sort(function(a,b){return cmp(a.no,b.no);});save();toast('Mother '+m+' added to your heifers');}go('#tag-'+encodeURIComponent(m));});});
   function addCalf(cv,d,sex){if(!cv||getTag(cv))return false;db.tags.push({no:cv,note:'',weights:[],birth:d||'',mother:t.no,shed:'Calf pen',lact:0,sex:sex||''});db.tags.sort(function(a,b){return cmp(a.no,b.no);});return true;}
-  $('#viewCalf').addEventListener('click',function(){var cv=norm($('#fCalf').value);if(!cv)return;doSave(function(){if(addCalf(cv,t.calving,'')){save();toast('Calf '+cv+' added to your heifers');}go('#tag-'+encodeURIComponent(cv));});});
+  $('#viewCalf').addEventListener('click',function(){var cv=norm($('#fCalf').value);if(!cv)return;doSave(function(){if(addCalf(cv,t.calving,'')){save();pendingCalf=cv;toast('Calf '+cv+' added — fill in its details');}go('#tag-'+encodeURIComponent(cv));});});
   $('#recDel').addEventListener('click',function(){
     var cs='';
     openSheet('<h2>Record delivery</h2><p class="muted small" style="margin:4px 0 14px">Lactation will go up by 1 and she\'ll be marked as not pregnant (empty).</p><div class="stack">'+
@@ -723,16 +867,21 @@ function vTag(no){
           t.calvings.push({d:d,calf:cv,sex:cs});
           t.calving=d;t.calf=cv;t.lact=(+t.lact||0)+1;t.preg='empty';delete t.pregM;delete t.pregAt;
           var added=add&&cv?addCalf(cv,d,cs):false;
-          save();toast('Delivery saved · lactation '+t.lact+(added?' · calf '+cv+' added':''));go('#tag-'+encodeURIComponent(t.no));
+          save();if(added){pendingCalf=cv;toast('Delivery saved · now fill in calf '+cv+'\'s details');go('#tag-'+encodeURIComponent(cv));}else{toast('Delivery saved · lactation '+t.lact);go('#tag-'+encodeURIComponent(t.no));}
         });
       });
     });
   });
   var rs=$('#restore');if(rs)rs.addEventListener('click',function(){delete t.removed;save();toast('Tag '+t.no+' is back in your heifers');vTag(t.no);});
-  $('#fBirth').addEventListener('change',function(e){var v=e.target.value;var a=$('#fAge');
-    if(v){var m=monthsBetween(v,todayISO());a.value=m>=0?m:'';a.disabled=true;$('#ageTxt').textContent='Age is worked out from the birth date: '+fmtAge(m);}
-    else{a.disabled=false;a.value='';$('#ageTxt').textContent='No birth date? Type the approximate age in months — it will keep counting up.';}});
-  $all('[data-wdel]').forEach(function(b){b.addEventListener('click',function(){var k=b.dataset.wdel;t.weights=(t.weights||[]).filter(function(w,i){return String(w.at||i)!==k;});save();vTag(t.no);});});
+  function at(){var v=$('#fBirth').value;$('#ageTxt').textContent=v?(approx?'Birth date estimated from age — change it if you know the exact date. ':'')+'Age: '+(fmtAge(monthsBetween(v,todayISO()))||'newborn'):'Fill either one — the other fills in automatically.';}
+  $('#fBirth').addEventListener('change',function(e){var v=e.target.value;approx=false;$('#fAge').value=v?Math.max(0,monthsBetween(v,todayISO())):'';at();});
+  $('#fAge').addEventListener('input',function(e){var v=parseInt(e.target.value,10);if(!isNaN(v)&&v>=0){$('#fBirth').value=addMonths(todayISO(),v);approx=true;}else if(e.target.value===''){$('#fBirth').value='';approx=false;}at();});
+  at();
+  var ka=$('#kgAdd');if(ka)ka.addEventListener('click',function(){var v=parseFloat(String($('#fKg').value).replace(',','.'));if(isNaN(v)||v<=0){toast('Type the weight first');$('#fKg').focus();return;}doSave(function(){toast('Weight '+fmtKg(v)+' added');vTag(t.no);});});
+  $all('[data-wdel]').forEach(function(b){b.addEventListener('click',function(){var k=b.dataset.wdel;var w=(t.weights||[]).filter(function(z){return String(z.at)===k;})[0];if(!w)return;
+    var ss=w.sid?getS(w.sid):null;
+    confirmSheet('Delete '+fmtKg(w.kg)+'?',ss?'This weight was entered in the treatment “'+ss.name+'” ('+fmtDate(ss.date)+'). It will be removed here and from that treatment; the heifer stays marked done there.':'Measured '+fmtDate(w.d)+'. This can\'t be undone.','Delete weight',true,function(){
+      t.weights=t.weights.filter(function(z){return z!==w;});if(ss&&ss.st[t.no])delete ss.st[t.no].w;save();vTag(t.no);});});});
   var del=$('#tDel');if(del)del.addEventListener('click',function(){removeSheet(t,function(){go('#herd');});});
   var seeH=$('#seeH');if(seeH)seeH.addEventListener('click',function(e){e.preventDefault();hf.tag=t.no;go('#history');});
   bindOpen(app);
@@ -746,16 +895,14 @@ function vTag(no){
     var kgV=parseFloat(String($('#fKg').value).replace(',','.'));
     var oldNo=t.no;
     t.no=newNo;t.sex=f.sex;t.shed=norm($('#fShed').value);t.note=norm($('#fNote').value);
-    t.birth=$('#fBirth').value||'';t.mother=momV;
-    if(t.birth){delete t.ageM;delete t.ageAt;}
-    else{var am=$('#fAge').value;if(am!==''&&!isNaN(+am)){if(String(am)!==String(ageMonths(t))){t.ageM=+am;t.ageAt=todayISO();}}else{delete t.ageM;delete t.ageAt;}}
+    t.birth=$('#fBirth').value||'';t.mother=momV;if(t.birth&&approx)t.birthApprox=true;else delete t.birthApprox;delete t.ageM;delete t.ageAt;
     if(f.sex!=='Male'){
       t.preg=B.preg;t.aiDate=$('#fAi').value||'';
       if(t.preg==='pregnant'&&!t.aiDate){var pmv=parseFloat($('#fPm').value);if(!isNaN(pmv)){t.pregM=pmv;t.pregAt=todayISO();}else{delete t.pregM;delete t.pregAt;}}else{delete t.pregM;delete t.pregAt;}
       t.calving=$('#fCalv').value||'';t.calf=norm($('#fCalf').value);t.lact=B.lact;
     }
     if(isNew){t.weights=[];db.tags.push(t);isNew=false;}
-    if(!isNaN(kgV)&&kgV>0)addWeight(t.no,kgV,todayISO(),null);
+    if(!isNaN(kgV)&&kgV>0)addWeight(t.no,kgV,$('#fKgD').value||todayISO(),null);
     if(!isNew&&oldNo!==newNo)renameTag(oldNo,newNo);
     db.tags.sort(function(a,b){return cmp(a.no,b.no);});
     var p=Promise.resolve();
@@ -763,7 +910,8 @@ function vTag(no){
     if(photo.changed){if(photo.data){t.photo=true;p=p.then(function(){return photoPut(newNo,photo.data);}).catch(function(){t.photo=false;toast('Photo could not be saved');});}else{t.photo=false;p=p.then(function(){return photoDel(oldNo);}).then(function(){return photoDel(newNo);});}}
     save();
     var wasNew=!oldNo;
-    p.then(function(){save();if(after)after();else{toast(wasNew?'Saved tag '+newNo:'Saved');go('#herd');}});
+    var wasPend=pendingCalf&&(pendingCalf===oldNo||pendingCalf===newNo);if(wasPend)pendingCalf=null;
+    p.then(function(){save();if(after)after();else if(wasPend&&t.mother&&getTag(t.mother)){toast('Calf '+newNo+' saved');go('#tag-'+encodeURIComponent(t.mother));}else{toast(wasNew?'Saved tag '+newNo:'Saved');go('#herd');}});
   }
 }
 function renameTag(a,b){
@@ -779,17 +927,16 @@ function histRow(s,no){
   var x=tagStatus(s,no);
   var col=x.k==='done'?'var(--g)':x.k==='skip'?'var(--amber)':'var(--muted)';
   var dot=x.k==='done'?'var(--g)':x.k==='skip'?'#E9A23B':'#B9B7AA';
-  return'<button class="li" data-open="'+s.id+'"><span style="width:12px;height:12px;border-radius:6px;background:'+dot+';flex-shrink:0"></span><span class="grow"><span style="display:block;font-weight:600">'+esc(s.name)+'</span><span class="sub">'+esc(s.type)+' · '+esc(fmtDate(s.date))+'</span></span><span class="small" style="font-weight:600;color:'+col+';text-align:right;max-width:40%">'+esc(x.t)+'</span></button>';
+  return'<button class="li" data-open="'+s.id+'"><span style="width:12px;height:12px;border-radius:6px;background:'+dot+';flex-shrink:0"></span><span class="grow"><span style="display:block;font-weight:600">'+esc(s.name)+'</span><span class="sub">'+esc(typeLabel(s.type))+' · '+esc(fmtDate(s.date))+'</span></span><span class="small" style="font-weight:600;color:'+col+';text-align:right;max-width:40%">'+esc(x.t)+'</span></button>';
 }
 
 /* ---------- backup ---------- */
-function backupSheet(){
-  openSheet('<h2>Backup &amp; restore</h2><p class="muted small" style="margin:4px 0 14px">Your data is saved on this phone only. Download a backup now and then, or to move to a new phone. Photos are included.</p><div class="stack">'+
-  '<button class="btn primary block" id="exp">Download backup file</button>'+
+function backupButtons(){return '<div class="stack">'+'<button class="btn primary block" id="exp">Download backup file</button>'+
   '<button class="btn block" id="expC">Copy backup as text</button>'+
   '<button class="btn block" id="impT">Restore from pasted text</button>'+
-  '<label class="btn block" for="impF" style="cursor:pointer">Restore from backup file</label><input type="file" id="impF" accept=".json,application/json" class="sr">'+
-  '<button class="btn block" data-close>Close</button></div>',function(s){
+  '<label class="btn block" for="impF" style="cursor:pointer">Restore from backup file</label><input type="file" id="impF" accept=".json,application/json" class="sr">'+'</div>';}
+function backupSheet(){openSheet('<h2>Backup &amp; restore</h2><p class="muted small" style="margin:4px 0 14px">Your data is saved on this phone only. Photos are included.</p>'+backupButtons()+'<div class="stack" style="margin-top:12px"><button class="btn block" data-close>Close</button></div>',bindBackup);}
+function bindBackup(s){
     function payload(){return photoAll().then(function(ph){var o=JSON.parse(JSON.stringify(db));o.photos=ph;return JSON.stringify(o);});}
     $('#exp',s).addEventListener('click',function(){
       payload().then(function(txt){
@@ -809,7 +956,6 @@ function backupSheet(){
       var f=e.target.files[0];if(!f)return;var r=new FileReader();
       r.onload=function(){restoreText(r.result);};r.readAsText(f);
     });
-  });
 }
 function restoreText(txt){
   try{var d=JSON.parse(txt);if(!d||!Array.isArray(d.tags)||!Array.isArray(d.sessions))throw 0;
@@ -824,11 +970,11 @@ function restoreText(txt){
 /* ---------- HISTORY (with filters) ---------- */
 var hf={tag:'',type:'',name:'',status:'',period:''};
 function vHistory(){
-  var types=['','Vaccination','Deworming','Treatment','Activity'];
+  var types=['','Vaccination','Deworming','Treatment','AI','PregCheck','Activity'];
   var h='<div class="view"><div class="top">'+LOGO+'<h1>History</h1></div>'+
   '<div class="content" style="gap:12px;flex:none;padding-bottom:6px">'+
   '<div class="search" id="hts">'+I.search+'<input id="htq" inputmode="numeric" placeholder="Find treatments for a tag" aria-label="Find treatments for a tag number" value="'+esc(hf.tag)+'" autocomplete="off" enterkeyhint="search"><button class="clear" id="htc" aria-label="Clear tag">'+I.x+'</button></div>'+
-  '<div class="chips" style="flex-wrap:nowrap;overflow-x:auto;margin:0 -20px;padding:0 20px 2px">'+types.map(function(t){return'<button class="chip" style="white-space:nowrap" data-ft="'+t+'">'+(t===''?'All types':t==='Activity'?'Other activity':t)+'</button>';}).join('')+'</div>'+
+  '<div class="chips" style="flex-wrap:nowrap;overflow-x:auto;margin:0 -20px;padding:0 20px 2px">'+types.map(function(t){return'<button class="chip" style="white-space:nowrap" data-ft="'+t+'">'+(t===''?'All types':typeLabel(t))+'</button>';}).join('')+'</div>'+
   '<div class="filters"><label class="sr" for="fName">Name / medicine</label><select class="sel" id="fName"></select>'+
   '<label class="sr" for="fStatus">Status</label><select class="sel" id="fStatus"><option value="">Any status</option><option value="live">In progress</option><option value="fin">Finished</option></select>'+
   '<label class="sr" for="fPeriod">Period</label><select class="sel" id="fPeriod"><option value="">All time</option><option value="30">Last 30 days</option><option value="90">Last 3 months</option><option value="365">Last 12 months</option><option value="year">This year</option></select></div>'+
@@ -891,7 +1037,7 @@ function vNew(){
   var mine=(db.custom[d.type]||[]).filter(function(n){return presetNames(d.type).indexOf(n)<0;});
   var h='<div class="view"><div class="top"><button class="iconbtn" id="bk" aria-label="Back">'+I.back+'</button><h1>New treatment</h1></div><div class="content">'+
   '<div class="stack"><div class="label">What are you doing?</div><div class="types">'+
-  TYPES.map(function(t){return'<button class="type '+(d.type===t?'on':'')+'" data-type="'+t+'" aria-pressed="'+(d.type===t)+'">'+I.types[t]+(t==='Activity'?'Other activity':t)+'</button>';}).join('')+
+  TYPES.map(function(t){return'<button class="type '+(d.type===t?'on':'')+'" data-type="'+t+'" aria-pressed="'+(d.type===t)+'">'+I.types[t]+typeLabel(t)+'</button>';}).join('')+
   '</div></div>'+
   '<div class="stack"><label class="label" for="nm">Name / medicine</label>'+
   '<input class="input" id="nm" value="'+esc(d.name)+'" placeholder="Type a name or pick one below" autocomplete="off" enterkeyhint="done">'+
@@ -920,11 +1066,11 @@ function vNew(){
   $('#mSome').addEventListener('click',function(){d.mode='some';go('#select');});
   $('#go').addEventListener('click',function(){
     if(!act().length&&d.mode==='all'){go('#herd');return;}
-    var name=norm(d.name)||(d.type==='Activity'?'Activity':d.type);
+    var name=norm(d.name)||(d.type==='AI'?'Insemination':d.type==='PregCheck'?'Pregnancy check':d.type==='Activity'?'Activity':d.type);
     var tags=d.mode==='all'?act().map(function(t){return t.no;}):Object.keys(d.sel).sort(cmp);
     if(!tags.length)return;
     if(presetNames(d.type).indexOf(name)<0&&norm(d.name)){var c=db.custom[d.type]||[];c=c.filter(function(x){return x!==name;});c.unshift(name);db.custom[d.type]=c.slice(0,15);}
-    var s={id:uid(),type:d.type==='Activity'?'Activity':d.type,name:name,date:d.date||todayISO(),createdAt:Date.now(),tags:tags,st:{},finishedAt:null};
+    var s={id:uid(),type:d.type,name:name,date:d.date||todayISO(),createdAt:Date.now(),tags:tags,st:{},finishedAt:null};
     db.sessions.push(s);save();draft=null;go('#s-'+s.id);
   });
 }
@@ -961,7 +1107,7 @@ function vSelect(){
     $('#sDone').textContent=n?'Use '+n+' heifer'+(n>1?'s':''):'Select heifers';$('#sDone').disabled=!n;
     var g=$('#sg');
     if(!m.length){g.innerHTML='<div class="empty"><h3>'+(selQ.trim()?'No tag “'+esc(selQ.trim())+'”':'No heifers saved')+'</h3>'+(selQ.trim()?'<button class="btn primary" id="addSel">Save &amp; select '+esc(selQ.trim())+'</button>':'<a class="btn primary" href="#herd" style="text-decoration:none">Add heifers</a>')+'</div>';var a=$('#addSel');if(a)a.addEventListener('click',addAndSel);return;}
-    g.innerHTML=m.map(function(t){return'<button class="tile '+(d.sel[t.no]?'sel':'')+'" data-t="'+esc(t.no)+'" aria-pressed="'+(!!d.sel[t.no])+'"><span class="no">'+esc(t.no)+'</span><span class="nt">'+(tagSub(t.no)?esc(tagSub(t.no)):'&nbsp;')+'</span></button>';}).join('');
+    g.innerHTML=m.map(function(t){return'<button class="tile '+(d.sel[t.no]?'sel':tileCls(t))+'" data-t="'+esc(t.no)+'" aria-pressed="'+(!!d.sel[t.no])+'">'+tileIn(t.no,shortPreg(t)||tagSub(t.no))+'</button>';}).join('');
     $all('.tile',g).forEach(function(b){b.addEventListener('click',function(){toggle(b.dataset.t);var on=!!d.sel[b.dataset.t];b.classList.toggle('sel',on);b.setAttribute('aria-pressed',on);var n2=Object.keys(d.sel).length;$('#sc').textContent=n2+' selected'+(selQ.trim()?' · '+m.length+' shown':'');$('#sDone').textContent=n2?'Use '+n2+' heifer'+(n2>1?'s':''):'Select heifers';$('#sDone').disabled=!n2;});});
   }
 }
@@ -973,7 +1119,7 @@ function vSession(s){
   sv.skipMode=false;
   var h='<div class="view">'+
   '<header class="hero" id="hero"><div class="row" style="align-items:flex-start;gap:12px"><button class="iconbtn" id="bk" aria-label="Back to home">'+I.back+'</button>'+
-  '<div style="flex:1;min-width:0"><div class="kick">'+esc(s.type)+' · '+esc(fmtShort(s.date))+(badgeText(s.name)?' · <span style="background:#F2C230;color:#1C2117;border-radius:6px;padding:1px 6px">'+esc(badgeText(s.name))+'</span>':'')+'</div><div class="ttl">'+esc(s.name)+'</div></div>'+
+  '<div style="flex:1;min-width:0"><div class="kick">'+esc(typeLabel(s.type))+' · '+esc(fmtShort(s.date))+(badgeText(s.name)?' · <span style="background:#F2C230;color:#1C2117;border-radius:6px;padding:1px 6px">'+esc(badgeText(s.name))+'</span>':'')+'</div><div class="ttl">'+esc(s.name)+'</div></div>'+
   '<button class="iconbtn" id="menu" aria-label="More options">'+I.more+'</button></div>'+
   '<div class="count"><b id="cD">0</b><span class="of" id="cT"></span><span class="left" id="cL"></span></div>'+
   '<div class="bar"><i id="bD"></i><i class="sk" id="bK"></i></div></header>'+
@@ -996,7 +1142,7 @@ function vSession(s){
     var exact=s.tags.filter(function(t){return t.toLowerCase()===v.toLowerCase();})[0];
     var m=filtered();
     var target=exact||(m.length===1?m[0]:null);
-    if(target&&!s.st[target]){sv.skipMode?skipSheet(s,target):isWeigh(s)?weighSheet(s,target):mark(s,target,{s:'done'});sv.q='';q.value='';draw();}
+    if(target&&!s.st[target]){sv.skipMode?skipSheet(s,target):isWeigh(s)?weighSheet(s,target):isPC(s)?pcSheet(s,target):mark(s,target,{s:'done'});sv.q='';q.value='';draw();}
     else if(!exact&&!m.length){addToSession(s,v);}
   });
   $('#qc').addEventListener('click',function(){sv.q='';q.value='';draw();q.focus();});
@@ -1017,7 +1163,7 @@ function vSession(s){
     if(lpFired){lpFired=false;return;}
     var no=t.dataset.t,cur=s.st[no];
     if(sv.skipMode){if(!cur||cur.s!=='skip')skipSheet(s,no);else tileMenu(s,no);return;}
-    if(!cur){if(isWeigh(s))weighSheet(s,no);else mark(s,no,{s:'done'});}else tileMenu(s,no);
+    if(!cur){if(isWeigh(s))weighSheet(s,no);else if(isPC(s))pcSheet(s,no);else mark(s,no,{s:'done'});}else tileMenu(s,no);
   });
   g.addEventListener('click',function(e){var b=e.target.closest('[data-act]');if(!b)return;var a=b.dataset.act;
     if(a==='fin')$('#fin').click();if(a==='add')addToSession(s,norm(sv.q));if(a==='showall'){sv.tab='all';draw();}});
@@ -1050,7 +1196,7 @@ function vSession(s){
     var hw=$('#hintWrap');
     if(sv.skipMode)hw.innerHTML='<div class="skipbar"><span>Tap the heifer you want to skip</span></div>';
     else{
-      var hint=isWeigh(s)?'Tap a heifer to enter its weight (optional). Hold a tag for more options.':'Tap a tag when that heifer is done. Hold a tag for more options.';
+      var hint=isWeigh(s)?'Tap a heifer to enter its weight (optional). Hold a tag for more options.':isAI(s)?'Tap a heifer when she is inseminated — her page is updated with today\'s AI date.':isPC(s)?'Tap a heifer to record the result: pregnant or empty.':'Tap a tag when that heifer is done. Hold a tag for more options.';
       if(sv.tab==='done')hint='Tap a tag to undo it.';
       if(sv.tab==='skip')hint='Tap a tag to change the reason or undo.';
       if(sv.q.trim()&&list.length===1&&!s.st[list[0]])hint='Press Enter to mark '+list[0]+' done.';
@@ -1069,19 +1215,42 @@ function vSession(s){
     }
     g.innerHTML=list.map(function(t){
       var x=s.st[t];var cls=x?(x.s==='done'?'done':'skip'):'';
-      var sub=x&&x.s==='skip'?(x.r||'Skipped'):x&&x.w?fmtKg(x.w):tagSub(t);
-      return'<button class="tile '+cls+'" data-t="'+esc(t)+'" aria-label="Tag '+esc(t)+(x?(x.s==='done'?', done':', skipped'):'')+'"><span class="no">'+esc(t)+'</span><span class="nt">'+(sub?esc(sub):'&nbsp;')+'</span></button>';
+      var sub=x&&x.s==='skip'?(x.r||'Skipped'):x&&x.w?fmtKg(x.w):x&&x.res?x.res:x&&x.s==='done'&&isAI(s)?'Inseminated':tagSub(t);
+      return'<button class="tile '+cls+(x?'':tileCls(getTag(t)))+'" data-t="'+esc(t)+'" aria-label="Tag '+esc(t)+(x?(x.s==='done'?', done':', skipped'):'')+'">'+tileIn(t,sub)+'</button>';
     }).join('');
   }
 }
 function mark(s,no,val){
-  var prev=s.st[no]||null;
+  var prev=s.st[no]||null;var tg=getTag(no);
   removeWeight(no,s.id);
-  if(val){val.at=Date.now();s.st[no]=val;if(val.w)addWeight(no,val.w,s.date,s.id);}else delete s.st[no];
+  if(prev&&prev.snap&&tg)restoreSnap(tg,prev.snap,s.id);
+  if(val){val.at=Date.now();s.st[no]=val;if(val.w)addWeight(no,val.w,s.date,s.id);if(val.s==='done'&&tg)applyBreed(s,tg,val);}else delete s.st[no];
   save();
   if(sv.draw)sv.draw();
-  var msg=val?(val.s==='done'?'Tag '+no+(val.w?' · '+fmtKg(val.w)+' saved':' marked done'):'Tag '+no+' skipped'+(val.r?' — '+val.r:'')):'Tag '+no+' moved back to Left';
-  toast(msg,function(){removeWeight(no,s.id);if(prev){s.st[no]=prev;if(prev.w)addWeight(no,prev.w,s.date,s.id);}else delete s.st[no];save();if(sv.draw)sv.draw();});
+  var msg=val?(val.s==='done'?'Tag '+no+(val.w?' · '+fmtKg(val.w)+' saved':val.res?' · '+val.res:isAI(s)?' inseminated':' marked done'):'Tag '+no+' skipped'+(val.r?' — '+val.r:'')):'Tag '+no+' moved back to Left';
+  toast(msg,function(){removeWeight(no,s.id);if(val&&val.snap&&tg)restoreSnap(tg,val.snap,s.id);if(prev){s.st[no]=prev;if(prev.w)addWeight(no,prev.w,s.date,s.id);if(prev.s==='done'&&tg)applyBreed(s,tg,prev);}else delete s.st[no];save();if(sv.draw)sv.draw();});
+}
+function snapOf(t){return{preg:t.preg||'',aiDate:t.aiDate||'',pregM:t.pregM,pregAt:t.pregAt};}
+function restoreSnap(t,sn,sid){t.preg=sn.preg;t.aiDate=sn.aiDate;if(sn.pregM!=null){t.pregM=sn.pregM;t.pregAt=sn.pregAt;}else{delete t.pregM;delete t.pregAt;}if(t.ais)t.ais=t.ais.filter(function(a){return a.sid!==sid;});}
+function applyBreed(s,t,val){
+  if(!isAI(s)&&!isPC(s))return;
+  val.snap=snapOf(t);
+  if(isAI(s)){t.preg='insem';t.aiDate=s.date;delete t.pregM;delete t.pregAt;t.ais=(t.ais||[]).filter(function(a){return a.sid!==s.id;});t.ais.push({d:s.date,semen:s.name,sid:s.id});}
+  if(isPC(s)){
+    if(val.res==='Pregnant'){t.preg='pregnant';if(!t.aiDate&&val.pm!=null){t.pregM=val.pm;t.pregAt=s.date;}}
+    else if(val.res==='Empty'){t.preg='empty';delete t.pregM;delete t.pregAt;}
+  }
+}
+function pcSheet(s,no){
+  var t=getTag(no);var ai=t&&t.aiDate;var dsa=ai?daysBetween(ai,s.date):null;
+  openSheet('<h2>Tag '+esc(no)+' — result</h2><p class="muted small" style="margin:4px 0 14px">'+(ai?'Last AI: '+esc(fmtDate(ai))+' ('+dsa+' days ago)':'No AI date saved for this heifer')+'</p><div class="stack">'+
+  '<button class="btn primary block" id="pcY">Pregnant</button>'+
+  (ai?'':'<label class="label" for="pcM">Months pregnant (optional)</label><input class="input" id="pcM" inputmode="numeric" placeholder="e.g. 3">')+
+  '<button class="btn block" id="pcN">Not pregnant (empty)</button><button class="btn amber block" id="pcR">Not sure — check again later</button><button class="btn block" data-close>Cancel</button></div>',function(sh){
+    $('#pcY',sh).addEventListener('click',function(){var m=$('#pcM',sh);var pm=m&&m.value!==''?parseFloat(m.value):null;closeSheet();mark(s,no,{s:'done',res:'Pregnant',pm:isNaN(pm)?null:pm});});
+    $('#pcN',sh).addEventListener('click',function(){closeSheet();mark(s,no,{s:'done',res:'Empty'});});
+    $('#pcR',sh).addEventListener('click',function(){closeSheet();mark(s,no,{s:'done',res:'Recheck'});});
+  });
 }
 function weighSheet(s,no){
   var t=getTag(no);var cur=s.st[no];var lw=lastWeight(t);
@@ -1116,7 +1285,7 @@ function skipSheet(s,no){
 }
 function tileMenu(s,no){
   var x=s.st[no];var note=tagSub(no);var tg=getTag(no);
-  var status=!x?'Not done yet':x.s==='done'?'Done'+(x.w?' · '+fmtKg(x.w):''):'Skipped'+(x.r?' — '+x.r:'');
+  var status=!x?'Not done yet':x.s==='done'?'Done'+(x.w?' · '+fmtKg(x.w):'')+(x.res?' · '+x.res:''):'Skipped'+(x.r?' — '+x.r:'');
   var b='';
   if(isWeigh(s)&&(!x||x.s==='done'))b+='<button class="btn primary block" id="mW">'+(x&&x.w?'Edit weight':'Enter weight')+'</button>';
   if(!x||x.s!=='done')b+='<button class="btn primary block" id="mDone">Mark done</button>';
@@ -1128,11 +1297,11 @@ function tileMenu(s,no){
   openSheet('<div class="row" style="gap:14px;margin-bottom:14px">'+(tg&&tg.photo?'<div class="photo sm" data-photo></div>':'')+'<div><h2>Tag '+esc(no)+'</h2><p class="muted small" style="margin:2px 0 0">'+esc(status)+(note?' · '+esc(note):'')+'</p></div></div><div class="stack">'+b+'<button class="btn block" data-close>Cancel</button></div>',function(sh){
     if(tg&&tg.photo)fillPhoto(sh,no);
     var mw=$('#mW',sh);if(mw)mw.addEventListener('click',function(){weighSheet(s,no);});
-    var d=$('#mDone',sh);if(d)d.addEventListener('click',function(){closeSheet();mark(s,no,{s:'done'});});
+    var d=$('#mDone',sh);if(d)d.addEventListener('click',function(){if(isPC(s)){pcSheet(s,no);return;}if(isWeigh(s)){weighSheet(s,no);return;}closeSheet();mark(s,no,{s:'done'});});
     $('#mSkip',sh).addEventListener('click',function(){skipSheet(s,no);});
     var u=$('#mUndo',sh);if(u)u.addEventListener('click',function(){closeSheet();mark(s,no,null);});
     $('#mRem',sh).addEventListener('click',function(){
-      closeSheet();var i=s.tags.indexOf(no),prev=s.st[no];s.tags.splice(i,1);delete s.st[no];removeWeight(no,s.id);save();sv.draw();
+      closeSheet();var i=s.tags.indexOf(no),prev=s.st[no];s.tags.splice(i,1);delete s.st[no];removeWeight(no,s.id);if(prev&&prev.snap&&tg)restoreSnap(tg,prev.snap,s.id);save();sv.draw();
       toast('Removed '+no+' from this treatment',function(){s.tags.splice(i,0,no);if(prev){s.st[no]=prev;if(prev.w)addWeight(no,prev.w,s.date,s.id);}save();sv.draw();});
     });
   });
@@ -1148,9 +1317,9 @@ function addToSession(s,v){
 }
 function sessionMenu(s){
   var st=stats(s);
-  openSheet('<h2>'+esc(s.name)+'</h2><p class="muted small" style="margin:4px 0 14px">'+esc(s.type)+' · '+esc(fmtDate(s.date))+'</p><div class="stack">'+
+  openSheet('<h2>'+esc(s.name)+'</h2><p class="muted small" style="margin:4px 0 14px">'+esc(typeLabel(s.type))+' · '+esc(fmtDate(s.date))+'</p><div class="stack">'+
   '<button class="btn block" id="smRen">Rename</button>'+
-  (st.left?'<button class="btn block" id="smAll">Mark all '+st.left+' left as done</button>':'')+
+  (st.left&&!isPC(s)?'<button class="btn block" id="smAll">Mark all '+st.left+' left as done</button>':'')+
   '<button class="btn block" id="smRep">See report</button>'+
   '<button class="btn danger block" id="smDel">Delete this treatment</button>'+
   '<button class="btn block" data-close>Close</button></div>',function(sh){
@@ -1161,8 +1330,8 @@ function sessionMenu(s){
     });
     var a=$('#smAll',sh);if(a)a.addEventListener('click',function(){
       confirmSheet('Mark all as done?','All '+st.left+' remaining heifers will be marked done.','Mark all done',false,function(){
-        var changed=[];s.tags.forEach(function(t){if(!s.st[t]){s.st[t]={s:'done',at:Date.now()};changed.push(t);}});save();sv.draw();
-        toast(changed.length+' marked done',function(){changed.forEach(function(t){delete s.st[t];});save();sv.draw();});
+        var changed=[];s.tags.forEach(function(t){if(!s.st[t]){var v={s:'done',at:Date.now()};s.st[t]=v;var tg2=getTag(t);if(tg2)applyBreed(s,tg2,v);changed.push(t);}});save();sv.draw();
+        toast(changed.length+' marked done',function(){changed.forEach(function(t){var v=s.st[t];var tg2=getTag(t);if(v&&v.snap&&tg2)restoreSnap(tg2,v.snap,s.id);delete s.st[t];});save();sv.draw();});
       });
     });
     $('#smRep',sh).addEventListener('click',function(){go('#sum-'+s.id);});
@@ -1176,8 +1345,8 @@ function sessionMenu(s){
 function report(s){
   var st=stats(s);
   var done=[],skip=[],left=[];
-  s.tags.slice().sort(cmp).forEach(function(t){var x=s.st[t];if(!x)left.push(t);else if(x.s==='done')done.push(t+(x.w?' ('+fmtKg(x.w)+')':''));else skip.push(t+(x.r?' – '+x.r:''));});
-  var L=[s.name+' ('+s.type+')',fmtDate(s.date),'',
+  s.tags.slice().sort(cmp).forEach(function(t){var x=s.st[t];if(!x)left.push(t);else if(x.s==='done')done.push(t+(x.w?' ('+fmtKg(x.w)+')':x.res?' ('+x.res+')':''));else skip.push(t+(x.r?' – '+x.r:''));});
+  var L=[s.name+' ('+typeLabel(s.type)+')',fmtDate(s.date),'',
     'Done: '+st.done+' of '+st.total];
   if(skip.length)L.push('Skipped ('+skip.length+'): '+skip.join(', '));
   if(left.length)L.push('Not done ('+left.length+'): '+left.join(', '));
@@ -1188,7 +1357,7 @@ function vSummary(s){
   var st=stats(s),r=report(s);var fin=!!s.finishedAt;
   var pending=[];s.tags.forEach(function(t){var x=s.st[t];if(!x||x.s==='skip')pending.push(t);});
   var h='<div class="view"><div class="top"><button class="iconbtn" id="bk" aria-label="Back">'+I.back+'</button><h1>'+(fin?'Report':'Progress report')+'</h1></div><div class="content" style="gap:18px">'+
-  '<div class="stack" style="gap:4px"><div class="label">'+esc(s.type)+' · '+esc(fmtDate(s.date))+'</div><h2 style="font-size:24px">'+esc(s.name)+'</h2></div>'+
+  '<div class="stack" style="gap:4px"><div class="label">'+esc(typeLabel(s.type))+' · '+esc(fmtDate(s.date))+'</div><h2 style="font-size:24px">'+esc(s.name)+'</h2></div>'+
   '<div class="sumgrid"><div class="card"><b style="color:var(--g)">'+st.done+'</b><span>Done</span></div><div class="card"><b style="color:var(--amber)">'+st.skip+'</b><span>Skipped</span></div><div class="card"><b>'+st.left+'</b><span>Not done</span></div></div>';
   if(r.skip.length){h+='<div class="stack"><div class="label">Skipped</div><div class="list">'+s.tags.filter(function(t){return s.st[t]&&s.st[t].s==='skip';}).sort(cmp).map(function(t){return'<div class="li"><span class="tg">'+esc(t)+'</span><span class="grow small">'+esc(s.st[t].r||'No reason given')+'</span></div>';}).join('')+'</div></div>';}
   if(r.left.length){h+='<div class="stack"><div class="label">Not done</div><div class="card taglist">'+r.left.map(esc).join(' · ')+'</div></div>';}
