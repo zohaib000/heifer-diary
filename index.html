@@ -30,7 +30,7 @@ button{cursor:pointer}
 .app{max-width:560px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;position:relative}
 .view{flex:1;display:flex;flex-direction:column;min-height:100dvh}
 h1,h2,h3{font-family:var(--head);margin:0}
-.top{display:flex;align-items:center;gap:12px;padding:calc(14px + var(--st)) 16px 16px;background:var(--g);color:#fff;border-radius:0 0 24px 24px;box-shadow:0 4px 14px rgba(31,74,40,.18);margin-bottom:4px}
+.top{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;padding:calc(14px + var(--st)) 16px 16px;background:var(--g);color:#fff;border-radius:0 0 24px 24px;box-shadow:0 4px 14px rgba(31,74,40,.18);margin-bottom:4px}
 .top h1{font-size:22px;font-weight:700;flex:1;color:#fff;line-height:1.15}
 .top .muted{color:#D3E6CF}
 .top .sub{font-size:13px;color:#D3E6CF;margin-top:2px}
@@ -491,11 +491,12 @@ var selQ='';
 function vSelect(){
   var d=draft;
   var h='<div class="view"><div class="top"><button class="iconbtn" id="bk" aria-label="Back">'+I.back+'</button><h1>Choose heifers</h1></div>'+
-  '<div class="ctrl" style="top:0;padding-top:4px"><div class="search" id="ss">'+I.search+'<input id="sq" placeholder="Find tag number" aria-label="Find tag number" value="'+esc(selQ)+'" autocomplete="off" enterkeyhint="done"><button class="clear" id="sqc" aria-label="Clear search">'+I.x+'</button></div>'+
+  '<div class="ctrl" id="sctrl" style="padding-top:10px"><div class="search" id="ss">'+I.search+'<input id="sq" placeholder="Find tag number" aria-label="Find tag number" value="'+esc(selQ)+'" autocomplete="off" enterkeyhint="done"><button class="clear" id="sqc" aria-label="Clear search">'+I.x+'</button></div>'+
   '<div class="row" style="justify-content:space-between"><span class="small muted" id="sc"></span><span class="row" style="gap:6px"><button class="btn sm" id="sAll">Select all</button><button class="btn sm" id="sNone">Clear</button></span></div></div>'+
   '<div class="grid" id="sg"></div>'+
   '<div class="actionbar"><button class="btn primary" id="sDone"></button></div></div>';
   app.innerHTML=h;
+  $('#sctrl').style.top=$('.top',app).offsetHeight+'px';
   var q=$('#sq');
   $('#bk').addEventListener('click',function(){if(!Object.keys(d.sel).length)d.mode='all';go('#new');});
   q.addEventListener('input',function(){selQ=q.value;draw();});
