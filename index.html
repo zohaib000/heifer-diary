@@ -317,6 +317,7 @@ function load(){
   d.custom=d.custom&&typeof d.custom==='object'?d.custom:{};
   if(!Array.isArray(d.rem))d.rem=defaultRems();
   if(!Array.isArray(d.sections))d.sections=defaultSections();
+  if(!Array.isArray(d.protocols))d.protocols=defaultProtocols();
   d.settings=Object.assign(defaultSettings(),d.settings||{});
   if(!Array.isArray(d.sheds)){var u={'Calf pen':1,'Main heifers area':1,'Cows area':1};d.tags.forEach(function(t){if(t.shed)u[t.shed]=1;});d.sheds=Object.keys(u);}
   return d;
@@ -716,13 +717,141 @@ function vBreeding(){
          ['feed','7+ months pregnant — special feed','','#9B2C66']];
   var h='<div class="view"><div class="top">'+LOGO+'<h1>Breeding</h1></div><div class="content" style="gap:18px">'+
   '<div class="bstat"><a href="#herd" data-bf="pregnant"><b>'+cnt.pregnant+'</b><span>Pregnant</span></a><a href="#herd" data-bf="insem"><b>'+cnt.insem+'</b><span>Inseminated</span></a><a href="#herd" data-bf="empty"><b>'+cnt.empty+'</b><span>Empty</span></a></div>';
-  var any=false;
+  var run=[];act().forEach(function(t){(t.plans||[]).forEach(function(p){if(p.kind==='protocol'&&planActive(p)){var nx=planNext(p);run.push({t:t,n:daysBetween(todayISO(),nx.d),txt:p.name+' · next: day '+nx.day+' '+nx.l+' — '+fmtShort(nx.d),hot:daysBetween(todayISO(),nx.d)<=0});}});});
+  h+='<button class="btn block" id="startProt">'+I.plus+'Start Ovsync / protocol</button>';
+  if(run.length)h+='<div class="stack"><div class="label">Protocols running ('+run.length+')</div><div class="list">'+run.sort(function(a,b){return a.n-b.n;}).map(function(r){return breedRow(r,'var(--red)');}).join('')+'</div></div>';
+  var any=run.length>0;
   S.forEach(function(x){var L=G[x[0]];if(!L.length)return;any=true;
     h+='<div class="stack"><div class="label">'+esc(x[1])+' ('+L.length+')</div>'+(x[2]?'<span class="small muted" style="margin-top:-4px">'+esc(x[2])+'</span>':'')+'<div class="list">'+L.map(function(r){return breedRow(r,x[3]);}).join('')+'</div></div>';});
   if(!any)h+='<div class="card stack" style="gap:8px"><b>Nothing to watch right now</b><span class="small muted">This page fills in from each heifer\'s breeding data. To start: open a heifer and set her to <b>Inseminated</b> with the AI date, or <b>Pregnant</b>. Or run an <b>Insemination (AI)</b> or <b>Pregnancy check</b> treatment — tapping a heifer there updates her automatically.</span></div>';
   h+='</div>'+nav('breed')+'</div>';
   app.innerHTML=h;
   $all('[data-bf]').forEach(function(a){a.addEventListener('click',function(){herdSt=a.dataset.bf;herdShed='';});});
+  $('#startProt').addEventListener('click',function(){planSheet({kind:'protocol',tags:[]});});
+}
+
+/* ---------- AI details ---------- */
+function recentVals(key){var m={};db.tags.forEach(function(t){(t.ais||[]).forEach(function(a){if(a[key])m[a[key]]=1;});(t.plans||[]).forEach(function(p){if(key==='dr'&&p.dr)m[p.dr]=1;});});return Object.keys(m).slice(-8);}
+function aiLine(a){return[a.bull||a.semen||'Insemination',a.sex==='Sexed'?'Sexed semen':a.sex==='Conventional'?'Conventional':'',a.dose?a.dose+' sperm':'',a.heat?(a.heat==='Protocol'?'Protocol heat':'Natural heat'):'',a.dr?'Dr/technician: '+a.dr:''].filter(Boolean).join(' · ');}
+function seg(name,opts,val){return'<div class="seg2" data-seg="'+name+'" style="grid-template-columns:repeat('+opts.length+',1fr)">'+opts.map(function(o){return'<button type="button" class="'+(val===o[0]?'on':'')+'" data-v="'+esc(o[0])+'">'+esc(o[1])+'</button>';}).join('')+'</div>';}
+function bindSeg(root,state){$all('[data-seg]',root).forEach(function(g){var k=g.dataset.seg;$all('button',g).forEach(function(b){b.addEventListener('click',function(){state[k]=state[k]===b.dataset.v?'':b.dataset.v;$all('button',g).forEach(function(x){x.classList.toggle('on',x.dataset.v===state[k]);});});});});}
+function chipPick(root,inputId,attr){$all('['+attr+']',root).forEach(function(c){c.addEventListener('click',function(){$('#'+inputId,root).value=c.getAttribute(attr);});});}
+function aiForm(no,pre,onSave){
+  var st={sex:pre.sex||'Conventional',dose:pre.dose||'',heat:pre.heat||'Natural'};
+  var bulls=recentVals('bull'),drs=recentVals('dr');
+  openSheet('<h2>AI details — tag '+esc(no)+'</h2><div class="stack" style="margin-top:12px">'+
+  '<label class="label" for="aiD">AI date</label><input class="input" type="date" id="aiD" value="'+esc(pre.d||todayISO())+'">'+
+  '<label class="label" for="aiB">Bull name / semen</label><input class="input" id="aiB" value="'+esc(pre.bull||'')+'" placeholder="e.g. Sahiwal bull 1234" autocomplete="off">'+
+  (bulls.length?'<div class="chips">'+bulls.map(function(b){return'<button type="button" class="chip" data-pb="'+esc(b)+'">'+esc(b)+'</button>';}).join('')+'</div>':'')+
+  '<label class="label" for="aiDr">Done by (doctor / technician)</label><input class="input" id="aiDr" value="'+esc(pre.dr||'')+'" placeholder="e.g. Dr Ahmed" autocomplete="off">'+
+  (drs.length?'<div class="chips">'+drs.map(function(b){return'<button type="button" class="chip" data-pd="'+esc(b)+'">'+esc(b)+'</button>';}).join('')+'</div>':'')+
+  '<div class="label">Semen</div>'+seg('sex',[['Conventional','Conventional'],['Sexed','Sexed']],st.sex)+
+  '<div class="label">Dose</div>'+seg('dose',[['2M','2M sperm'],['4M','4M sperm']],st.dose)+
+  '<div class="label">Heat</div>'+seg('heat',[['Natural','Natural heat'],['Protocol','Protocol heat']],st.heat)+
+  '<button class="btn primary block" id="aiOk">Save AI</button><button class="btn block" data-close>Cancel</button></div>',function(sh){
+    bindSeg(sh,st);chipPick(sh,'aiB','data-pb');chipPick(sh,'aiDr','data-pd');
+    $('#aiOk',sh).addEventListener('click',function(){
+      var info={d:$('#aiD',sh).value||todayISO(),bull:norm($('#aiB',sh).value),dr:norm($('#aiDr',sh).value),sex:st.sex,dose:st.dose,heat:st.heat};
+      closeSheet();onSave(info);
+    });
+  });
+}
+function recordAI(t,info,sid){
+  t.ais=(t.ais||[]).filter(function(a){return a.sid!==sid;});
+  t.ais.push(Object.assign({},info,{sid:sid}));
+  t.preg='insem';t.aiDate=info.d;delete t.pregM;delete t.pregAt;
+}
+
+/* ---------- treatment plans: medicines & protocols ---------- */
+function defaultProtocols(){return[
+  {id:'ovsync2',name:'Ovsync (2× Cyclomate)',steps:[{day:0,l:'Conceptal (GnRH) injection'},{day:7,l:'Cyclomate (PGF) injection'},{day:8,l:'Cyclomate (PGF) 2nd injection'},{day:9,l:'Conceptal (GnRH) injection — in the evening'},{day:10,l:'AI — 16–18 hours after last Conceptal',ai:true}]},
+  {id:'ovsync',name:'Ovsync (standard)',steps:[{day:0,l:'Conceptal (GnRH) injection'},{day:7,l:'Cyclomate (PGF) injection'},{day:9,l:'Conceptal (GnRH) injection — in the evening'},{day:10,l:'AI — 16–18 hours after last Conceptal',ai:true}]}
+];}
+function planActive(p){return!p.cancelled&&p.steps.some(function(s){return!s.done;});}
+function planNext(p){for(var i=0;i<p.steps.length;i++)if(!p.steps[i].done)return p.steps[i];return null;}
+function planSheet(o){
+  var kind=o.kind;var tags=(o.tags||[]).join(', ');
+  var drs=recentVals('dr');
+  if(kind==='meds'){
+    openSheet('<h2>Follow-up medicine</h2><p class="muted small" style="margin:4px 0 12px">For medicines or injections the doctor suggests for the next days. You\'ll get a task each day.</p><div class="stack">'+
+    '<label class="label" for="pT">Tag number(s)</label><input class="input" id="pT" inputmode="numeric" value="'+esc(tags)+'" placeholder="e.g. 1042 or 1042, 233">'+
+    '<label class="label" for="pM">Medicine / injection</label><input class="input" id="pM" placeholder="e.g. Oxytetracycline injection" autocomplete="off">'+
+    '<label class="label" for="pDo">Dose / how to give (optional)</label><input class="input" id="pDo" placeholder="e.g. 10 ml IM, morning" autocomplete="off">'+
+    '<div class="types"><div class="stack" style="gap:6px"><label class="small muted" for="pS">Start date</label><input class="input" type="date" id="pS" value="'+todayISO()+'"></div><div class="stack" style="gap:6px"><label class="small muted" for="pN">For how many days</label><input class="input" id="pN" inputmode="numeric" value="3"></div></div>'+
+    '<label class="label" for="pE">Every … days</label><input class="input" id="pE" inputmode="numeric" value="1">'+
+    '<label class="label" for="pDr">Suggested by (doctor)</label><input class="input" id="pDr" value="'+esc(o.dr||'')+'" placeholder="e.g. Dr Ahmed" autocomplete="off">'+
+    (drs.length?'<div class="chips">'+drs.map(function(b){return'<button type="button" class="chip" data-pd="'+esc(b)+'">'+esc(b)+'</button>';}).join('')+'</div>':'')+
+    '<button class="btn primary block" id="pOk">Save plan</button><button class="btn block" data-close>Cancel</button></div>',function(sh){
+      chipPick(sh,'pDr','data-pd');
+      $('#pOk',sh).addEventListener('click',function(){
+        var tl=splitTags($('#pT',sh).value),med=norm($('#pM',sh).value),n=parseInt($('#pN',sh).value,10),ev=parseInt($('#pE',sh).value,10)||1,st=$('#pS',sh).value||todayISO();
+        if(!tl.length){toast('Type a tag number');return;}if(!med){toast('Type the medicine');return;}if(!(n>0)){toast('Type the number of days');return;}
+        var dose=norm($('#pDo',sh).value),dr=norm($('#pDr',sh).value);var made=0,miss=[];
+        tl.forEach(function(no){var t=getTag(no);if(!t){miss.push(no);return;}var steps=[];for(var d=0;d<n;d+=ev)steps.push({d:addDays(st,d),l:med+(dose?' — '+dose:'')});
+          t.plans=t.plans||[];t.plans.push({id:uid(),kind:'meds',name:med,dose:dose,dr:dr,steps:steps,created:Date.now(),sid:o.sid||null});made++;});
+        save();closeSheet();toast('Plan saved for '+made+' heifer'+(made===1?'':'s')+(miss.length?' · not found: '+miss.join(', '):''));if(o.after)o.after();else route();
+      });
+    });
+    return;
+  }
+  // protocol
+  var tpl=JSON.parse(JSON.stringify(db.protocols[0]));
+  openSheet('<h2>Start a protocol</h2><p class="muted small" style="margin:4px 0 12px">Each step becomes a task on its day. The AI step asks for the AI details.</p><div class="stack">'+
+  '<label class="label" for="pT">Tag number(s)</label><input class="input" id="pT" inputmode="numeric" value="'+esc(tags)+'" placeholder="e.g. 201, 203">'+
+  '<div class="label">Protocol</div><div class="chips" id="pTpl">'+db.protocols.map(function(p,i){return'<button type="button" class="chip '+(i===0?'on':'')+'" data-tpl="'+i+'">'+esc(p.name)+'</button>';}).join('')+'</div>'+
+  '<label class="label" for="pS">Day 0 (first injection) date</label><input class="input" type="date" id="pS" value="'+todayISO()+'">'+
+  '<label class="label" for="pDr">Doctor</label><input class="input" id="pDr" placeholder="e.g. Dr Ahmed" autocomplete="off">'+
+  (drs.length?'<div class="chips">'+drs.map(function(b){return'<button type="button" class="chip" data-pd="'+esc(b)+'">'+esc(b)+'</button>';}).join('')+'</div>':'')+
+  '<div class="label">Steps <span style="text-transform:none;font-weight:500">(change the days to match your doctor)</span></div><div class="list" id="pSteps"></div>'+
+  '<label class="row" style="gap:10px;font-weight:600;min-height:44px"><input type="checkbox" id="pSaveT" style="width:22px;height:22px;accent-color:var(--g)"> Save these steps as this protocol\'s default</label>'+
+  '<button class="btn primary block" id="pOk">Start protocol</button><button class="btn block" data-close>Cancel</button></div>',function(sh){
+    chipPick(sh,'pDr','data-pd');
+    var ti=0;
+    function draw(){var st=$('#pS',sh).value||todayISO();
+      $('#pSteps',sh).innerHTML=tpl.steps.map(function(s,i){return'<div class="li" style="gap:8px"><span class="small muted" style="width:34px">Day</span><input class="input" data-sd="'+i+'" inputmode="numeric" value="'+s.day+'" style="width:58px;height:44px;padding:0 8px;text-align:center"><span class="grow"><input class="input" data-sl="'+i+'" value="'+esc(s.l)+'" style="height:44px;padding:0 10px;font-size:14px"><span class="sub">'+esc(fmtDate(addDays(st,+s.day||0)))+'</span></span></div>';}).join('');
+      $all('[data-sd]',sh).forEach(function(x){x.addEventListener('change',function(){tpl.steps[+x.dataset.sd].day=parseInt(x.value,10)||0;draw();});});
+      $all('[data-sl]',sh).forEach(function(x){x.addEventListener('input',function(){tpl.steps[+x.dataset.sl].l=x.value;});});
+    }
+    draw();$('#pS',sh).addEventListener('change',draw);
+    $all('[data-tpl]',sh).forEach(function(c){c.addEventListener('click',function(){ti=+c.dataset.tpl;tpl=JSON.parse(JSON.stringify(db.protocols[ti]));$all('[data-tpl]',sh).forEach(function(z){z.classList.toggle('on',z===c);});draw();});});
+    $('#pOk',sh).addEventListener('click',function(){
+      var tl=splitTags($('#pT',sh).value);if(!tl.length){toast('Type a tag number');return;}
+      var st=$('#pS',sh).value||todayISO(),dr=norm($('#pDr',sh).value);var made=0,miss=[];
+      if($('#pSaveT',sh).checked){db.protocols[ti].steps=JSON.parse(JSON.stringify(tpl.steps));}
+      tl.forEach(function(no){var t=getTag(no);if(!t){miss.push(no);return;}
+        t.plans=t.plans||[];t.plans.push({id:uid(),kind:'protocol',name:tpl.name,dr:dr,start:st,steps:tpl.steps.slice().sort(function(a,b){return a.day-b.day;}).map(function(s){var dd=addDays(st,+s.day||0);return{d:dd,day:+s.day||0,l:norm(s.l),ai:!!s.ai,done:(dd<todayISO()&&!s.ai)?dd:null};}),created:Date.now()});made++;});
+      save();closeSheet();toast(tpl.name+' started for '+made+' heifer'+(made===1?'':'s')+(miss.length?' · not found: '+miss.join(', '):''));if(o.after)o.after();else route();
+    });
+  });
+}
+function doStep(t,p,s,after){
+  if(s.ai){aiForm(t.no,{d:todayISO(),dr:p.dr||'',heat:'Protocol'},function(info){recordAI(t,info,p.id);s.done=todayISO();save();toast('AI saved · tag '+t.no);after();});return;}
+  s.done=todayISO();save();toast('Done · '+s.l,function(){s.done=null;save();after();});after();
+}
+function planTasks(out){
+  var today=todayISO();
+  act().forEach(function(t){(t.plans||[]).forEach(function(p){if(p.cancelled)return;p.steps.forEach(function(s,si){if(s.done)return;var n=daysBetween(today,s.d);if(n>1)return;
+    out.push({g:'plan',no:t.no,txt:(p.kind==='protocol'?p.name+' · day '+s.day+': ':'')+s.l,sub:(n<0?'Missed — was due '+fmtShort(s.d):n===0?'Today':'Tomorrow')+(p.kind==='meds'?' · '+(si+1)+' of '+p.steps.length:'')+(p.dr?' · '+p.dr:''),hot:n<=0,btn:n<=0?(s.ai?'Record AI':'Done'):'',open:function(){doStep(t,p,s,route);}});});});});
+}
+function plansHtml(t){
+  var ps=(t.plans||[]).slice().sort(function(a,b){return(planActive(b)?1:0)-(planActive(a)?1:0)||b.created-a.created;});
+  var h='<div class="sect" id="planSec"><div class="sect-h">Medicines &amp; protocols</div>';
+  if(!ps.length)h+='<span class="small muted">No follow-up medicines or protocols yet.</span>';
+  ps.forEach(function(p){var act_=planActive(p);
+    h+='<div class="card stack" style="gap:8px;padding:12px;'+(act_?'':'opacity:.7')+'"><div class="row" style="justify-content:space-between;align-items:flex-start"><span><b>'+esc(p.name)+'</b><span class="sub" style="display:block">'+esc([p.kind==='protocol'?'Protocol':'Medicine',p.dose,p.dr].filter(Boolean).join(' · '))+'</span></span><span class="badge '+(act_?'live':'fin')+'">'+(p.cancelled?'Stopped':act_?'Running':'Finished')+'</span></div><div class="list">'+
+    p.steps.map(function(s,i){var n=daysBetween(todayISO(),s.d);return'<label class="li" style="cursor:pointer;padding:10px 12px"><input type="checkbox" data-pstep="'+p.id+':'+i+'" '+(s.done?'checked':'')+(p.cancelled?' disabled':'')+' style="width:22px;height:22px;accent-color:var(--g);flex-shrink:0"><span class="grow"><span style="display:block;font-weight:600;font-size:14px">'+(p.kind==='protocol'?'Day '+s.day+' · ':'')+esc(s.l)+'</span><span class="sub" style="'+(!s.done&&n<0?'color:var(--red);font-weight:600':'')+'">'+esc(fmtDate(s.d))+(s.done?' · done':!s.done&&n<0?' · missed':n===0?' · today':'')+'</span></span></label>';}).join('')+'</div>'+
+    (act_?'<div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" data-pics="'+p.id+'">Add to phone calendar</button><button type="button" class="btn sm" data-pstop="'+p.id+'" style="color:var(--red)">Stop</button></div>':'<button type="button" class="btn sm" data-pdel="'+p.id+'" style="align-self:flex-start;color:var(--red)">Delete</button>')+'</div>';});
+  h+='<div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" id="addMed">'+I.plus.replace('<svg','<svg width="18" height="18"')+'Follow-up medicine</button>'+(t.sex!=='Male'?'<button type="button" class="btn sm" id="addProt">'+I.plus.replace('<svg','<svg width="18" height="18"')+'Start Ovsync / protocol</button><button type="button" class="btn sm" id="addAI">'+I.plus.replace('<svg','<svg width="18" height="18"')+'Record AI</button>':'')+'</div></div>';
+  return h;
+}
+function icsPlan(t,p){
+  var now=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+  var L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Heifer Diary//EN','CALSCALE:GREGORIAN'];
+  p.steps.forEach(function(s,i){if(s.done)return;var ds=s.d.replace(/-/g,''),de=addDays(s.d,1).replace(/-/g,'');
+    L.push('BEGIN:VEVENT','UID:heifer-plan-'+p.id+'-'+i+'@heiferdiary','DTSTAMP:'+now,'DTSTART;VALUE=DATE:'+ds,'DTEND;VALUE=DATE:'+de,'SUMMARY:Tag '+t.no+': '+(p.kind==='protocol'?p.name+' day '+s.day+' — ':'')+s.l.replace(/[,;]/g,' '),'BEGIN:VALARM','TRIGGER:PT8H','ACTION:DISPLAY','DESCRIPTION:Tag '+t.no+' — '+s.l.replace(/[,;]/g,' '),'END:VALARM','END:VEVENT');});
+  L.push('END:VCALENDAR');
+  var blob=new Blob([L.join('\r\n')],{type:'text/calendar'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tag-'+t.no+'-'+p.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.ics';document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1500);toast('Open the downloaded file to add the dates to your calendar');
 }
 
 /* ---------- SECTIONS (age groups) ---------- */
@@ -764,6 +893,7 @@ function heatCandidates(){var min=+db.settings.heatMinM;return act().filter(func
 /* ---------- FARM TASKS ---------- */
 function farmTasks(){
   var today=todayISO(),out=[];
+  planTasks(out);
   act().forEach(function(t){
     if(t.care&&t.care.start){
       CARE.forEach(function(c){if(t.care.done&&t.care.done[c.k])return;var due=addDays(t.care.start,careOffset(c));var n=daysBetween(today,due);
@@ -778,21 +908,21 @@ function farmTasks(){
     if(e&&t.section&&e!==t.section){var to=secById(e);var prev={s:t.section,a:t.sectionAt,sh:t.shed};
       out.push({g:'move',no:t.no,txt:'Move to '+secFull(e),sub:'From '+secFull(t.section)+(to&&to.shed?' · shed: '+to.shed:'')+' · now '+(fmtAge(am)||'—'),hot:true,btn:'Moved',run:function(){moveTo(t,e);},undo:function(){t.section=prev.s;t.sectionAt=prev.a;t.shed=prev.sh;}});}
     if(t.section==='heat'&&t.sectionAt&&t.preg!=='pregnant'&&t.preg!=='insem'){var dd=daysBetween(t.sectionAt,today);
-      if(dd>=(+db.settings.heatOvsyncDays))out.push({g:'ovsync',no:t.no,txt:dd+' days in heat prep, no AI yet',sub:'Discuss Ovsync protocol with the doctor',hot:false,btn:'',run:null});}
+      if(dd>=(+db.settings.heatOvsyncDays))if(!(t.plans||[]).some(function(pp){return pp.kind==='protocol'&&planActive(pp);}))out.push({g:'ovsync',no:t.no,txt:dd+' days in heat prep, no AI yet',sub:'Discuss Ovsync protocol with the doctor',hot:false,btn:'Start protocol',open:function(){planSheet({kind:'protocol',tags:[t.no]});}});}
   });
   var last=db.settings.heatLast,cands=heatCandidates();
   var dueH=last?addDays(last,+db.settings.heatEvery):today;var nH=daysBetween(today,dueH);
   if(nH<=0&&cands.length)out.unshift({g:'heatrev',no:'',txt:'Heat prep review',sub:cands.length+' empty heifer'+(cands.length===1?'':'s')+' '+db.settings.heatMinM+'+ months not in heat prep',hot:true,btn:'Review',go:'#tasks'});
   return out;
 }
-var TASKG=[['heatrev','Heat preparation review'],['dry','Dry off (lactating cows)'],['care','Calf care'],['wean','Weaning'],['move','Move to next section'],['ovsync','Heat prep follow-up']];
+var TASKG=[['heatrev','Heat preparation review'],['plan','Medicines & protocols'],['dry','Dry off (lactating cows)'],['care','Calf care'],['wean','Weaning'],['move','Move to next section'],['ovsync','Heat prep follow-up']];
 function taskRow(x,i){
   var col=x.hot?'var(--red)':'var(--amber)';
   return'<div class="li"><span class="rdot" style="background:'+col+'"></span>'+(x.no?'<a href="#tag-'+encodeURIComponent(x.no)+'" class="tg" style="min-width:66px;display:flex;align-items:center;gap:4px;text-decoration:none;color:inherit">'+EAR.replace('class="ear"','class="ear" width="16" height="16"')+esc(x.no)+'</a>':'')+
   '<span class="grow"><span style="display:block;font-weight:600">'+esc(x.txt)+'</span><span class="sub">'+esc(x.sub)+'</span></span>'+
   (x.btn?(x.go?'<a class="btn sm" href="'+x.go+'">'+esc(x.btn)+'</a>':'<button class="btn sm" data-task="'+i+'">'+esc(x.btn)+'</button>'):'')+'</div>';
 }
-function bindTasks(root,list){$all('[data-task]',root).forEach(function(b){b.addEventListener('click',function(){var x=list[+b.dataset.task];if(!x||!x.run)return;x.run();save();route();toast('Tag '+x.no+' · '+x.txt.toLowerCase()+' — done',x.undo?function(){x.undo();save();route();}:null);});});}
+function bindTasks(root,list){$all('[data-task]',root).forEach(function(b){b.addEventListener('click',function(){var x=list[+b.dataset.task];if(x&&x.open){x.open();return;}if(!x||!x.run)return;x.run();save();route();toast('Tag '+x.no+' · '+x.txt.toLowerCase()+' — done',x.undo?function(){x.undo();save();route();}:null);});});}
 function vTasks(){
   var L=farmTasks().filter(function(x){return x.g!=='heatrev';});
   var cands=heatCandidates();var last=db.settings.heatLast;
@@ -983,7 +1113,7 @@ function vTag(no){
   '<div class="chips" id="subNot"><button class="chip" data-pg="empty">Empty (open)</button><button class="chip" data-pg="insem">Inseminated, not confirmed</button></div></div>'+
   '<div class="stack" id="aiBox"><label class="label" for="fAi">Last AI date</label><input class="input" type="date" id="fAi" value="'+esc(t.aiDate||'')+'"><span class="small muted" id="aiTxt"></span></div>'+
   '<div class="stack" id="pmBox"><label class="label" for="fPm">Months pregnant</label><input class="input" id="fPm" inputmode="numeric" placeholder="e.g. 4" value="'+esc(pregMonths(t)!=null?String(pregMonths(t)):'')+'"><span class="small muted" id="pmTxt"></span></div>'+
-  ((t.ais&&t.ais.length)?'<div class="stack"><div class="label">AI history ('+t.ais.length+')</div><div class="list">'+t.ais.slice().sort(function(a,b){return(b.d||'').localeCompare(a.d||'');}).map(function(a){return'<div class="li"><span class="grow"><span style="display:block;font-weight:600">'+esc(fmtDate(a.d))+'</span><span class="sub">'+esc(a.semen||'Insemination')+'</span></span></div>';}).join('')+'</div></div>':'')+
+  ((t.ais&&t.ais.length)?'<div class="stack"><div class="label">AI history ('+t.ais.length+')</div><div class="list">'+t.ais.slice().sort(function(a,b){return(b.d||'').localeCompare(a.d||'');}).map(function(a){return'<div class="li"><span class="grow"><span style="display:block;font-weight:600">'+esc(fmtDate(a.d))+'</span><span class="sub">'+esc(aiLine(a))+'</span></span></div>';}).join('')+'</div></div>':'')+
   '<div class="stack"><div class="label">Lactation number</div><div class="row" style="gap:12px"><button type="button" class="iconbtn" id="lMinus" aria-label="Decrease lactation" style="font-size:22px;font-weight:700">−</button><span id="lVal" class="lval">0</span><button type="button" class="iconbtn" id="lPlus" aria-label="Increase lactation" style="font-size:22px;font-weight:700">+</button><span class="small muted" id="lTxt" style="flex:1"></span></div></div>'+
   '<div class="stack"><div class="label">Last delivery</div><div class="types"><div class="stack" style="gap:6px"><label class="small muted" for="fCalv">Delivery date</label><input class="input" type="date" id="fCalv" value="'+esc(t.calving||'')+'"></div>'+
   '<div class="stack" style="gap:6px"><label class="small muted" for="fCalf">Calf tag number</label><input class="input" id="fCalf" inputmode="numeric" value="'+esc(t.calf||'')+'" placeholder="e.g. 5003" autocomplete="off"></div></div>'+
@@ -993,6 +1123,7 @@ function vTag(no){
   var kids=t.no?db.tags.filter(function(k){return k.mother===t.no;}):[];
   if(kids.length)h+='<div class="stack"><div class="label">Her calves ('+kids.length+')</div><div class="list">'+kids.map(function(k){return'<a class="li" style="text-decoration:none;color:inherit" href="#tag-'+encodeURIComponent(k.no)+'"><span class="tg">'+esc(k.no)+'</span><span class="grow sub">'+esc([k.sex,k.birth?'born '+fmtDate(k.birth):'',fmtAge(ageMonths(k)),k.removed?'removed':''].filter(Boolean).join(' · '))+'</span>'+I.chev+'</a>';}).join('')+'</div></div>';
   h+='</div>';
+  if(!isNew)h+=plansHtml(t);
   h+='<div class="stack"><label class="label" for="fNote">Notes</label><textarea class="input" id="fNote" rows="2" placeholder="Colour, breed, anything…">'+esc(f.note)+'</textarea></div>';
   if(!isNew){
 
@@ -1011,6 +1142,16 @@ function vTag(no){
   $all('[data-sex]').forEach(function(c){c.addEventListener('click',function(){f.sex=f.sex===c.dataset.sex?'':c.dataset.sex;$all('[data-sex]').forEach(function(x){x.classList.toggle('on',x.dataset.sex===f.sex);});$('#breedSec').style.display=f.sex==='Male'?'none':'';});});
   $all('[data-secp]').forEach(function(c){c.addEventListener('click',function(){f.section=f.section===c.dataset.secp?'':c.dataset.secp;$all('[data-secp]').forEach(function(z){z.classList.toggle('on',z.dataset.secp===f.section);});var z=secById(f.section);if(z&&z.shed){$('#fShed').value=z.shed;$all('[data-shedp]').forEach(function(y){y.classList.toggle('on',y.dataset.shedp===z.shed);});}});});
   $all('[data-care]').forEach(function(cb){cb.addEventListener('change',function(){t.care.done=t.care.done||{};if(cb.checked)t.care.done[cb.dataset.care]=todayISO();else delete t.care.done[cb.dataset.care];save();toast(cb.checked?'Marked done':'Marked not done');});});
+  function rer(){doSave(function(){vTag(t.no);});}
+  function findP(id){return(t.plans||[]).filter(function(p){return p.id===id;})[0];}
+  $all('[data-pstep]').forEach(function(cb){cb.addEventListener('change',function(){var k=cb.dataset.pstep.split(':');var p=findP(k[0]),st=p.steps[+k[1]];
+    if(cb.checked){cb.checked=false;doStep(t,p,st,rer);}else{st.done=null;save();rer();}});});
+  $all('[data-pics]').forEach(function(b){b.addEventListener('click',function(){icsPlan(t,findP(b.dataset.pics));});});
+  $all('[data-pstop]').forEach(function(b){b.addEventListener('click',function(){var p=findP(b.dataset.pstop);confirmSheet('Stop '+p.name+'?','Remaining steps won\'t show as tasks any more.','Stop',true,function(){p.cancelled=todayISO();save();rer();});});});
+  $all('[data-pdel]').forEach(function(b){b.addEventListener('click',function(){var p=findP(b.dataset.pdel);confirmSheet('Delete '+p.name+'?','This removes it from her record.','Delete',true,function(){t.plans=t.plans.filter(function(x){return x!==p;});save();rer();});});});
+  var am_=$('#addMed');if(am_)am_.addEventListener('click',function(){planSheet({kind:'meds',tags:[t.no],after:rer});});
+  var ap_=$('#addProt');if(ap_)ap_.addEventListener('click',function(){planSheet({kind:'protocol',tags:[t.no],after:rer});});
+  var aa_=$('#addAI');if(aa_)aa_.addEventListener('click',function(){aiForm(t.no,{d:todayISO()},function(info){recordAI(t,info,'m'+uid());save();toast('AI saved');rer();});});
   var cst=$('#careStart');if(cst)cst.addEventListener('click',function(){t.care={start:t.birth||todayISO(),done:{}};save();doSave(function(){vTag(t.no);});});
   $all('[data-shedp]').forEach(function(c){c.addEventListener('click',function(){$('#fShed').value=c.dataset.shedp;$all('[data-shedp]').forEach(function(x){x.classList.toggle('on',x===c);});});});
   function rb(){
@@ -1154,7 +1295,7 @@ function restoreText(txt){
   try{var d=JSON.parse(txt);if(!d||!Array.isArray(d.tags)||!Array.isArray(d.sessions))throw 0;
     confirmSheet('Replace current data?','This phone has '+db.tags.length+' heifers and '+db.sessions.length+' treatments. The backup has '+d.tags.length+' heifers and '+d.sessions.length+' treatments.','Restore backup',true,function(){
       var ph=d.photos||{};delete d.photos;db=d;if(!db.custom)db.custom={};save();
-      if(!Array.isArray(db.rem))db.rem=defaultRems();if(!Array.isArray(db.sections))db.sections=defaultSections();db.settings=Object.assign(defaultSettings(),db.settings||{});var ks=Object.keys(ph);var p=Promise.resolve();ks.forEach(function(k){p=p.then(function(){return photoPut(k,ph[k]);});});
+      if(!Array.isArray(db.rem))db.rem=defaultRems();if(!Array.isArray(db.sections))db.sections=defaultSections();if(!Array.isArray(db.protocols))db.protocols=defaultProtocols();db.settings=Object.assign(defaultSettings(),db.settings||{});var ks=Object.keys(ph);var p=Promise.resolve();ks.forEach(function(k){p=p.then(function(){return photoPut(k,ph[k]);});});
       p.catch(function(){}).then(function(){toast('Backup restored');route();});
     });
   }catch(err){closeSheet();toast('That is not a Heifer Diary backup');}
@@ -1335,7 +1476,7 @@ function vSession(s){
     var exact=s.tags.filter(function(t){return t.toLowerCase()===v.toLowerCase();})[0];
     var m=filtered();
     var target=exact||(m.length===1?m[0]:null);
-    if(target&&!s.st[target]){sv.skipMode?skipSheet(s,target):isWeigh(s)?weighSheet(s,target):isPC(s)?pcSheet(s,target):mark(s,target,{s:'done'});sv.q='';q.value='';draw();}
+    if(target&&!s.st[target]){sv.skipMode?skipSheet(s,target):isWeigh(s)?weighSheet(s,target):isPC(s)?pcSheet(s,target):isAI(s)?aiTap(s,target):mark(s,target,{s:'done'});sv.q='';q.value='';draw();}
     else if(!exact&&!m.length){addToSession(s,v);}
   });
   $('#qc').addEventListener('click',function(){sv.q='';q.value='';draw();q.focus();});
@@ -1356,7 +1497,7 @@ function vSession(s){
     if(lpFired){lpFired=false;return;}
     var no=t.dataset.t,cur=s.st[no];
     if(sv.skipMode){if(!cur||cur.s!=='skip')skipSheet(s,no);else tileMenu(s,no);return;}
-    if(!cur){if(isWeigh(s))weighSheet(s,no);else if(isPC(s))pcSheet(s,no);else mark(s,no,{s:'done'});}else tileMenu(s,no);
+    if(!cur){if(isWeigh(s))weighSheet(s,no);else if(isPC(s))pcSheet(s,no);else if(isAI(s))aiTap(s,no);else mark(s,no,{s:'done'});}else tileMenu(s,no);
   });
   g.addEventListener('click',function(e){var b=e.target.closest('[data-act]');if(!b)return;var a=b.dataset.act;
     if(a==='fin')$('#fin').click();if(a==='add')addToSession(s,norm(sv.q));if(a==='showall'){sv.tab='all';draw();}});
@@ -1428,12 +1569,13 @@ function restoreSnap(t,sn,sid){t.preg=sn.preg;t.aiDate=sn.aiDate;if(sn.pregM!=nu
 function applyBreed(s,t,val){
   if(!isAI(s)&&!isPC(s))return;
   val.snap=snapOf(t);
-  if(isAI(s)){t.preg='insem';t.aiDate=s.date;delete t.pregM;delete t.pregAt;t.ais=(t.ais||[]).filter(function(a){return a.sid!==s.id;});t.ais.push({d:s.date,semen:s.name,sid:s.id});}
+  if(isAI(s)){recordAI(t,val.ai||{d:s.date,bull:s.name!=='Insemination'?s.name:''},s.id);}
   if(isPC(s)){
     if(val.res==='Pregnant'){t.preg='pregnant';if(!t.aiDate&&val.pm!=null){t.pregM=val.pm;t.pregAt=s.date;}}
     else if(val.res==='Empty'){t.preg='empty';delete t.pregM;delete t.pregAt;}
   }
 }
+function aiTap(s,no){var L=s.lastAI||{};aiForm(no,{d:s.date,bull:L.bull||(s.name!=='Insemination'?s.name:''),dr:L.dr||'',sex:L.sex,dose:L.dose,heat:L.heat},function(info){s.lastAI={bull:info.bull,dr:info.dr,sex:info.sex,dose:info.dose,heat:info.heat};mark(s,no,{s:'done',ai:info});});}
 function pcSheet(s,no){
   var t=getTag(no);var ai=t&&t.aiDate;var dsa=ai?daysBetween(ai,s.date):null;
   openSheet('<h2>Tag '+esc(no)+' — result</h2><p class="muted small" style="margin:4px 0 14px">'+(ai?'Last AI: '+esc(fmtDate(ai))+' ('+dsa+' days ago)':'No AI date saved for this heifer')+'</p><div class="stack">'+
@@ -1486,11 +1628,13 @@ function tileMenu(s,no){
   else b+='<button class="btn amber block" id="mSkip">Change reason</button>';
   if(x)b+='<button class="btn block" id="mUndo">Move back to Left</button>';
   b+='<button class="btn block" id="mRem" style="color:var(--red)">Remove from this treatment</button>';
+  if(tg)b+='<button class="btn block" id="mMed">Add follow-up medicine (doctor)</button>';
   if(tg)b+='<a class="btn block" style="text-decoration:none" href="#tag-'+encodeURIComponent(no)+'">Heifer details</a>';
   openSheet('<div class="row" style="gap:14px;margin-bottom:14px">'+(tg&&tg.photo?'<div class="photo sm" data-photo></div>':'')+'<div><h2>Tag '+esc(no)+'</h2><p class="muted small" style="margin:2px 0 0">'+esc(status)+(note?' · '+esc(note):'')+'</p></div></div><div class="stack">'+b+'<button class="btn block" data-close>Cancel</button></div>',function(sh){
     if(tg&&tg.photo)fillPhoto(sh,no);
+    var mm=$('#mMed',sh);if(mm)mm.addEventListener('click',function(){planSheet({kind:'meds',tags:[no],sid:s.id,after:function(){if(sv.draw)sv.draw();}});});
     var mw=$('#mW',sh);if(mw)mw.addEventListener('click',function(){weighSheet(s,no);});
-    var d=$('#mDone',sh);if(d)d.addEventListener('click',function(){if(isPC(s)){pcSheet(s,no);return;}if(isWeigh(s)){weighSheet(s,no);return;}closeSheet();mark(s,no,{s:'done'});});
+    var d=$('#mDone',sh);if(d)d.addEventListener('click',function(){if(isPC(s)){pcSheet(s,no);return;}if(isWeigh(s)){weighSheet(s,no);return;}if(isAI(s)){aiTap(s,no);return;}closeSheet();mark(s,no,{s:'done'});});
     $('#mSkip',sh).addEventListener('click',function(){skipSheet(s,no);});
     var u=$('#mUndo',sh);if(u)u.addEventListener('click',function(){closeSheet();mark(s,no,null);});
     $('#mRem',sh).addEventListener('click',function(){
