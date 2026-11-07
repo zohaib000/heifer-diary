@@ -274,7 +274,7 @@ function tileIn(no,extra){
   var t=getTag(no);
   var am=t?ageMonths(t):null,lw=t?lastWeight(t):null;
   var m1=[am!=null?(fmtAge(am)||'Newborn'):'',lw?fmtKg(lw.kg):''].filter(Boolean).join(' · ');
-  var m2=t?(t.shed||t.note||''):'';
+  var m2=t?[t.shed||t.note||'',secShort(t.section)].filter(Boolean).join(' · '):'';
   return'<span class="tr1">'+sexMini(t)+pillOf(t)+'</span>'+
     '<span class="no">'+EAR+'<span>'+esc(no)+'</span></span>'+
     '<span class="meta">'+(m1?esc(m1):'<span style="opacity:.5">No age / weight</span>')+'</span>'+
@@ -316,6 +316,8 @@ function load(){
   d.sessions=Array.isArray(d.sessions)?d.sessions:[];
   d.custom=d.custom&&typeof d.custom==='object'?d.custom:{};
   if(!Array.isArray(d.rem))d.rem=defaultRems();
+  if(!Array.isArray(d.sections))d.sections=defaultSections();
+  d.settings=Object.assign(defaultSettings(),d.settings||{});
   if(!Array.isArray(d.sheds)){var u={'Calf pen':1,'Main heifers area':1,'Cows area':1};d.tags.forEach(function(t){if(t.shed)u[t.shed]=1;});d.sheds=Object.keys(u);}
   return d;
 }
@@ -396,6 +398,8 @@ function route(){
   if(p[0]==='herd')return vHerd();
   if(p[0]==='rem'||p[0]==='manage')return vManage('rem');
   if(p[0]==='sheds')return vManage('sheds');
+  if(p[0]==='sections')return vManage('secs');
+  if(p[0]==='tasks')return vTasks();
   if(p[0]==='backup')return vManage('backup');
   if(p[0]==='breeding')return vBreeding();
   if(p[0]==='tag')return vTag(decodeURIComponent(p.slice(1).join('-')));
@@ -433,6 +437,8 @@ function vHome(){
   }
   h+='<div class="stat"><a href="#herd" class="card" style="text-decoration:none;color:inherit"><b>'+act().length+'</b><span>Heifers saved</span></a><a href="#history" class="card" style="text-decoration:none;color:inherit"><b>'+db.sessions.length+'</b><span>Treatments logged</span></a></div>';
   h+='<button class="btn primary block" id="newBtn" style="height:60px;font-size:18px">'+I.plus+'New treatment</button>';
+  var FT=farmTasks();
+  if(FT.length)h+='<div class="stack"><div class="row" style="justify-content:space-between"><div class="label">Farm tasks ('+FT.length+')</div><a href="#tasks" class="small" style="color:var(--g);font-weight:600">See all</a></div><div class="list">'+FT.slice(0,6).map(taskRow).join('')+'</div>'+(FT.length>6?'<a href="#tasks" class="btn sm" style="align-self:flex-start">See all '+FT.length+' tasks</a>':'')+'</div>';
   var rems=db.rem.filter(function(r){return r.on;}).sort(function(a,b){return remInfo(a).n-remInfo(b).n;});
   h+='<div class="stack"><div class="row" style="justify-content:space-between"><div class="label">Reminders</div><a href="#rem" class="small" style="color:var(--g);font-weight:600">Manage</a></div>'+(rems.length?'<div class="list">'+rems.map(remRow).join('')+'</div>':'<a href="#rem" class="card small muted" style="text-decoration:none">No reminders on. Tap to set them up.</a>')+'</div>';
   var G=breedGroups();var hb=[].concat(G.heat.filter(function(x){return x.hot;}).map(function(x){return[x,'var(--red)'];}),G.late.map(function(x){return[x,'var(--red)'];}),G.check.map(function(x){return[x,'var(--amber)'];}),G.calv.filter(function(x){return x.n<=14;}).map(function(x){return[x,'#9B2C66'];}),G.soon7.map(function(x){return[x,'var(--amber)'];}));
@@ -442,7 +448,7 @@ function vHome(){
   h+='</div>'+nav('home')+'</div>';
   app.innerHTML=h;
   $('#newBtn').addEventListener('click',function(){newDraft();go('#new');});
-  bindOpen(app);bindRem(app);
+  bindOpen(app);bindRem(app);bindTasks(app,FT);
 }
 
 /* ---------- photos (IndexedDB, so they don't fill up storage) ---------- */
@@ -583,8 +589,8 @@ function remRow(r){
 }
 function bindRem(root){$all('[data-start]',root).forEach(function(b){b.addEventListener('click',function(){var r=db.rem.filter(function(x){return x.id===b.dataset.start;})[0];if(r)startRem(r);});});}
 function manageTabs(on){
-  var T=[['rem','#rem','Reminders'],['sheds','#sheds','Sheds & pens'],['backup','#backup','Backup']];
-  return'<div class="tabs" style="grid-template-columns:repeat(3,minmax(0,1fr))" role="tablist">'+T.map(function(x){return'<a class="tab'+(on===x[0]?' on':'')+'" role="tab" aria-selected="'+(on===x[0])+'" href="'+x[1]+'" style="display:flex;align-items:center;justify-content:center;text-decoration:none">'+x[2]+'</a>';}).join('')+'</div>';
+  var T=[['rem','#rem','Reminders'],['secs','#sections','Sections'],['sheds','#sheds','Sheds'],['backup','#backup','Backup']];
+  return'<div class="tabs" style="grid-template-columns:repeat(4,minmax(0,1fr))" role="tablist">'+T.map(function(x){return'<a class="tab'+(on===x[0]?' on':'')+'" role="tab" aria-selected="'+(on===x[0])+'" href="'+x[1]+'" style="display:flex;align-items:center;justify-content:center;text-decoration:none">'+x[2]+'</a>';}).join('')+'</div>';
 }
 function vManage(tab){
   var h='<div class="view"><div class="top">'+LOGO+'<h1>Manage</h1></div><div class="content" style="gap:14px">'+manageTabs(tab);
@@ -599,6 +605,8 @@ function vManage(tab){
       '<div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn sm primary" data-start="'+esc(r.id)+'">Start now</button><button class="btn sm" data-ics="'+esc(r.id)+'">Add to phone calendar</button><button class="btn sm" data-edit="'+esc(r.id)+'">Edit</button><button class="btn sm" data-rdel="'+esc(r.id)+'" style="color:var(--red)">Delete</button></div></div>';
     });
     h+='<button class="btn block" id="addRem">'+I.plus+'Add a reminder</button>';
+  }else if(tab==='secs'){
+    h+=sectionsHtml();
   }else if(tab==='sheds'){
     var list=sheds();
     h+='<p class="small muted" style="margin:0">These names show up as quick choices on each heifer\'s page.</p>'+
@@ -618,6 +626,7 @@ function vManage(tab){
     $all('[data-rdel]').forEach(function(b){b.addEventListener('click',function(){var r=find(b.dataset.rdel);
       confirmSheet('Delete “'+r.label+'” reminder?','Your treatment records stay. You can add it again any time.','Delete',true,function(){var i=db.rem.indexOf(r);db.rem.splice(i,1);save();route();toast('Reminder deleted',function(){db.rem.splice(i,0,r);save();route();});});});});
     $('#addRem').addEventListener('click',function(){remSheet(null);});
+  }else if(tab==='secs'){bindSections(app);
   }else if(tab==='sheds'){
     var inp=$('#shIn');
     function add(){var v=norm(inp.value);if(!v)return;if(sheds().some(function(x){return x.toLowerCase()===v.toLowerCase();})){toast(v+' already exists');return;}db.sheds=db.sheds||[];db.sheds.push(v);save();route();toast('Added '+v);}
@@ -627,7 +636,7 @@ function vManage(tab){
       openSheet('<h2>Rename shed</h2><div class="stack" style="margin-top:12px"><input class="input" id="srn" value="'+esc(old)+'" autocomplete="off"><span class="small muted">'+shedCount(old)+' heifer(s) in this shed will be updated.</span><button class="btn primary block" id="srnOk">Save</button><button class="btn block" data-close>Cancel</button></div>',function(sh){
         $('#srnOk',sh).addEventListener('click',function(){var v=norm($('#srn',sh).value);if(!v)return;
           db.sheds=(db.sheds||[]).filter(function(x){return x!==old&&x!==v;});db.sheds.push(v);
-          db.tags.forEach(function(t){if(t.shed===old)t.shed=v;});save();closeSheet();route();toast('Renamed to '+v);});
+          db.tags.forEach(function(t){if(t.shed===old)t.shed=v;});db.sections.forEach(function(z){if(z.shed===old)z.shed=v;});save();closeSheet();route();toast('Renamed to '+v);});
       });});});
     $all('[data-sdel]').forEach(function(b){b.addEventListener('click',function(){var x=b.dataset.sdel;var c=shedCount(x);
       confirmSheet('Delete “'+x+'”?',c?c+' heifer(s) are in this shed. They will stay in your heifers but with no shed set.':'No heifers are in this shed.','Delete shed',true,function(){
@@ -716,8 +725,141 @@ function vBreeding(){
   $all('[data-bf]').forEach(function(a){a.addEventListener('click',function(){herdSt=a.dataset.bf;herdShed='';});});
 }
 
+/* ---------- SECTIONS (age groups) ---------- */
+function defaultSections(){return[
+  {id:'s1',name:'Section 1',short:'0–3 m',from:0,to:3,shed:'',feed:'',notes:'Young calves. Colostrum, milk and calf starter. Weaning reminder comes at 4 months.'},
+  {id:'s2',name:'Section 2',short:'3–6 m',from:3,to:6,shed:'',feed:'',notes:'Growing calves. Push weight gain.'},
+  {id:'s3',name:'Section 3',short:'6–9 m',from:6,to:9,shed:'',feed:'',notes:'Growing heifers. Push weight gain.'},
+  {id:'s4',name:'Section 4',short:'9–12 m',from:9,to:12,shed:'',feed:'',notes:'Last growth stage before the main section. Aim for maximum weight by 12 months.'},
+  {id:'main',name:'Main section',short:'Main',from:12,to:null,shed:'',feed:'',notes:'Mixed heifers 12+ months — pregnant and not pregnant together.'},
+  {id:'heat',name:'Heat preparation',short:'Heat prep',from:null,to:null,shed:'',feed:'',notes:'Empty heifers 13+ months. Not for extra weight — specific feed and supplements for 1–2 months to bring them into heat naturally and support the ovaries. Heifers that don\'t come into heat: Ovsync protocol (decide with the doctor), then AI.'}
+];}
+function defaultSettings(){return{weanM:4,heatMinM:13,heatEvery:30,heatOvsyncDays:60,dehornDays:15,heatLast:''};}
+var CARE=[{k:'colostrum',l:'Colostrum feeding',d:0},{k:'navel',l:'Navel disinfection (thread & iodine)',d:0},{k:'vacc',l:'Calf vaccination',d:0},{k:'dehorn',l:'Dehorning',d:-1}];
+function careOffset(c){return c.d<0?(+db.settings.dehornDays||15):c.d;}
+function secById(id){for(var i=0;i<db.sections.length;i++)if(db.sections[i].id===id)return db.sections[i];return null;}
+function secShort(id){var s=secById(id);return s?s.short:'';}
+function secFull(id){var s=secById(id);return s?s.name+(/^s[1-4]$/.test(s.id)&&s.short?' ('+s.short+')':''):'';}
+function ageSection(t){
+  var am=ageMonths(t);if(am==null)return null;
+  for(var i=0;i<4;i++){var s=db.sections[i];if(am>=+s.from&&am<+s.to)return s.id;}
+  return t.sex==='Male'?null:'main';
+}
+function expSection(t){
+  var base=ageSection(t);if(!base)return null;
+  if(base==='main'&&t.section==='heat')return t.preg==='pregnant'?'main':'heat';
+  return base;
+}
+function initSections(){
+  var today=todayISO(),ch=false;
+  act().forEach(function(t){
+    if(!t.section){var e=ageSection(t);if(e){t.section=e;t.sectionAt=today;ch=true;}}
+    if(!t.wean){var am=ageMonths(t);if(am!=null&&am>(+db.settings.weanM)+1){t.wean='before';ch=true;}}
+  });
+  if(ch)save();
+}
+function moveTo(t,secId){var s=secById(secId);t.section=secId;t.sectionAt=todayISO();if(s&&s.shed)t.shed=s.shed;}
+function heatCandidates(){var min=+db.settings.heatMinM;return act().filter(function(t){var am=ageMonths(t);return t.sex!=='Male'&&!(+t.lact>0)&&!t.calving&&am!=null&&am>=min&&t.preg!=='pregnant'&&t.preg!=='insem'&&t.section!=='heat';});}
+
+/* ---------- FARM TASKS ---------- */
+function farmTasks(){
+  var today=todayISO(),out=[];
+  act().forEach(function(t){
+    if(t.care&&t.care.start){
+      CARE.forEach(function(c){if(t.care.done&&t.care.done[c.k])return;var due=addDays(t.care.start,careOffset(c));var n=daysBetween(today,due);
+        if(n<=3)out.push({g:'care',no:t.no,txt:c.l,sub:n>0?'Due '+fmtShort(due)+' ('+inDaysTxt(n)+')':n===0?'Due today':'Overdue — was due '+fmtShort(due),hot:n<=0,btn:'Done',run:function(){t.care.done=t.care.done||{};t.care.done[c.k]=today;},undo:function(){delete t.care.done[c.k];}});});
+    }
+    var am=ageMonths(t);
+    if(am!=null&&!t.wean&&am>=(+db.settings.weanM)&&am<12){out.push({g:'wean',no:t.no,txt:'Weaning due',sub:'Now '+fmtAge(am)+' old',hot:true,btn:'Weaned',run:function(){t.wean=today;},undo:function(){delete t.wean;}});}
+    var e=expSection(t);
+    if(e&&t.section&&e!==t.section){var to=secById(e);var prev={s:t.section,a:t.sectionAt,sh:t.shed};
+      out.push({g:'move',no:t.no,txt:'Move to '+secFull(e),sub:'From '+secFull(t.section)+(to&&to.shed?' · shed: '+to.shed:'')+' · now '+(fmtAge(am)||'—'),hot:true,btn:'Moved',run:function(){moveTo(t,e);},undo:function(){t.section=prev.s;t.sectionAt=prev.a;t.shed=prev.sh;}});}
+    if(t.section==='heat'&&t.sectionAt&&t.preg!=='pregnant'&&t.preg!=='insem'){var dd=daysBetween(t.sectionAt,today);
+      if(dd>=(+db.settings.heatOvsyncDays))out.push({g:'ovsync',no:t.no,txt:dd+' days in heat prep, no AI yet',sub:'Discuss Ovsync protocol with the doctor',hot:false,btn:'',run:null});}
+  });
+  var last=db.settings.heatLast,cands=heatCandidates();
+  var dueH=last?addDays(last,+db.settings.heatEvery):today;var nH=daysBetween(today,dueH);
+  if(nH<=0&&cands.length)out.unshift({g:'heatrev',no:'',txt:'Heat prep review',sub:cands.length+' empty heifer'+(cands.length===1?'':'s')+' '+db.settings.heatMinM+'+ months not in heat prep',hot:true,btn:'Review',go:'#tasks'});
+  return out;
+}
+var TASKG=[['heatrev','Heat preparation review'],['care','Calf care'],['wean','Weaning'],['move','Move to next section'],['ovsync','Heat prep follow-up']];
+function taskRow(x,i){
+  var col=x.hot?'var(--red)':'var(--amber)';
+  return'<div class="li"><span class="rdot" style="background:'+col+'"></span>'+(x.no?'<a href="#tag-'+encodeURIComponent(x.no)+'" class="tg" style="min-width:66px;display:flex;align-items:center;gap:4px;text-decoration:none;color:inherit">'+EAR.replace('class="ear"','class="ear" width="16" height="16"')+esc(x.no)+'</a>':'')+
+  '<span class="grow"><span style="display:block;font-weight:600">'+esc(x.txt)+'</span><span class="sub">'+esc(x.sub)+'</span></span>'+
+  (x.btn?(x.go?'<a class="btn sm" href="'+x.go+'">'+esc(x.btn)+'</a>':'<button class="btn sm" data-task="'+i+'">'+esc(x.btn)+'</button>'):'')+'</div>';
+}
+function bindTasks(root,list){$all('[data-task]',root).forEach(function(b){b.addEventListener('click',function(){var x=list[+b.dataset.task];if(!x||!x.run)return;x.run();save();route();toast('Tag '+x.no+' · '+x.txt.toLowerCase()+' — done',x.undo?function(){x.undo();save();route();}:null);});});}
+function vTasks(){
+  var L=farmTasks().filter(function(x){return x.g!=='heatrev';});
+  var cands=heatCandidates();var last=db.settings.heatLast;
+  var h='<div class="view"><div class="top"><button class="iconbtn" id="bk" aria-label="Back">'+I.back+'</button><h1>Farm tasks</h1><a class="btn sm" href="#sections" style="background:#3E7D49;border:none;color:#fff">Section guide</a></div><div class="content" style="gap:18px">';
+  h+='<div class="stack"><div class="label">Heat preparation review</div><div class="card stack" style="gap:10px"><span class="small">Every '+db.settings.heatEvery+' days, move <b>empty heifers '+db.settings.heatMinM+'+ months</b> to the heat preparation section. Last review: <b>'+(last?esc(fmtDate(last)):'never')+'</b>.</span>';
+  if(cands.length){h+='<div class="list">'+cands.map(function(t){return'<div class="li"><span class="tg" style="min-width:66px;display:flex;align-items:center;gap:4px">'+EAR.replace('class="ear"','class="ear" width="16" height="16"')+esc(t.no)+'</span><span class="grow sub">'+esc([fmtAge(ageMonths(t)),pregLabel(t)||'Status not set',secShort(t.section)].filter(Boolean).join(' · '))+'</span><button class="btn sm" data-hp="'+esc(t.no)+'">Move</button></div>';}).join('')+'</div>'+
+    '<div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn sm primary" id="hpAll">Move all '+cands.length+'</button><button class="btn sm" id="hpDone">Mark reviewed</button></div>';}
+  else h+='<span class="small muted">No empty heifers waiting — all done.</span><button class="btn sm" id="hpDone" style="align-self:flex-start">Mark reviewed</button>';
+  h+='</div></div>';
+  TASKG.forEach(function(g){if(g[0]==='heatrev')return;var it=L.map(function(x,i){return[x,i];}).filter(function(z){return z[0].g===g[0];});if(!it.length)return;
+    h+='<div class="stack"><div class="label">'+esc(g[1])+' ('+it.length+')</div><div class="list">'+it.map(function(z){return taskRow(z[0],z[1]);}).join('')+'</div></div>';});
+  if(!L.length)h+='<div class="card small muted">No other tasks right now.</div>';
+  h+='</div></div>';
+  app.innerHTML=h;
+  $('#bk').addEventListener('click',function(){go('#home');});
+  bindTasks(app,L);
+  function hp(list){var prev=list.map(function(t){return{t:t,s:t.section,a:t.sectionAt,sh:t.shed};});list.forEach(function(t){moveTo(t,'heat');});db.settings.heatLast=todayISO();save();route();
+    toast('Moved '+list.length+' to heat prep',function(){prev.forEach(function(p){p.t.section=p.s;p.t.sectionAt=p.a;p.t.shed=p.sh;});save();route();});}
+  $all('[data-hp]').forEach(function(b){b.addEventListener('click',function(){hp([getTag(b.dataset.hp)]);});});
+  var a=$('#hpAll');if(a)a.addEventListener('click',function(){hp(cands);});
+  $('#hpDone').addEventListener('click',function(){db.settings.heatLast=todayISO();save();route();toast('Review saved — next in '+db.settings.heatEvery+' days');});
+}
+
+/* ---------- SECTION GUIDE (Manage tab) ---------- */
+function sectionsHtml(){
+  var st=db.settings;
+  var h='<p class="small muted" style="margin:0">Heifers are put in a section by age. When one reaches the next age, you get a “Move” task on the Today screen. Link a section to a shed and moving her changes her shed too.</p>';
+  db.sections.forEach(function(s){
+    var n=act().filter(function(t){return t.section===s.id;}).length;
+    var age=s.id==='heat'?'Empty heifers '+st.heatMinM+'+ months':s.to==null?s.from+'+ months':s.from+'–'+s.to+' months';
+    h+='<div class="card stack" style="gap:8px"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><div style="font:700 19px var(--head)">'+esc(s.name)+'</div><div class="small" style="color:var(--g);font-weight:700">'+esc(age)+'</div></div><button class="btn sm" data-sec="'+s.id+'">Edit</button></div>'+
+    '<div class="small"><b>Shed:</b> '+(s.shed?esc(s.shed):'<span class="muted">not linked</span>')+'</div>'+
+    '<div class="small"><b>Feed / wanda:</b> '+(s.feed?'<span style="white-space:pre-line">'+esc(s.feed)+'</span>':'<span class="muted">not written yet — tap Edit</span>')+'</div>'+
+    (s.notes?'<div class="small muted" style="white-space:pre-line">'+esc(s.notes)+'</div>':'')+
+    '<a class="small" href="#herd" data-secgo="'+s.id+'" style="color:var(--g);font-weight:700">'+n+' heifer'+(n===1?'':'s')+' here now</a></div>';
+  });
+  h+='<div class="card stack" style="gap:8px"><div style="font:700 19px var(--head)">Alerts &amp; timings</div>'+
+  '<div class="small">• Weaning reminder at <b>'+st.weanM+' months</b></div>'+
+  '<div class="small">• Move alerts at <b>'+db.sections.slice(0,4).map(function(s){return s.to;}).join(', ')+' months</b></div>'+
+  '<div class="small">• Heat prep review every <b>'+st.heatEvery+' days</b> for empty heifers <b>'+st.heatMinM+'+ months</b></div>'+
+  '<div class="small">• Ovsync hint after <b>'+st.heatOvsyncDays+' days</b> in heat prep without AI</div>'+
+  '<div class="small">• After a delivery: colostrum, navel disinfection (thread &amp; iodine) and calf vaccination right away; dehorning after <b>'+st.dehornDays+' days</b></div>'+
+  '<button class="btn sm" id="setEdit" style="align-self:flex-start">Change timings</button></div>';
+  return h;
+}
+function bindSections(root){
+  $all('[data-secgo]',root).forEach(function(a){a.addEventListener('click',function(){herdSec=a.dataset.secgo;herdShed='';herdSt='';});});
+  $all('[data-sec]',root).forEach(function(b){b.addEventListener('click',function(){var s=secById(b.dataset.sec);var sh=sheds();var ageEd=/^s[1-4]$/.test(s.id);
+    openSheet('<h2>Edit '+esc(s.name)+'</h2><div class="stack" style="margin-top:12px">'+
+    '<label class="label" for="seN">Name</label><input class="input" id="seN" value="'+esc(s.name)+'">'+
+    (ageEd?'<div class="types"><div class="stack" style="gap:6px"><label class="small muted" for="seF">From (months)</label><input class="input" id="seF" inputmode="numeric" value="'+s.from+'"></div><div class="stack" style="gap:6px"><label class="small muted" for="seT">To (months)</label><input class="input" id="seT" inputmode="numeric" value="'+s.to+'"></div></div>':'')+
+    '<div class="label">Linked shed</div><div class="chips"><button type="button" class="chip '+(!s.shed?'on':'')+'" data-ls="">None</button>'+sh.map(function(x){return'<button type="button" class="chip '+(s.shed===x?'on':'')+'" data-ls="'+esc(x)+'">'+esc(x)+'</button>';}).join('')+'</div>'+
+    '<label class="label" for="seFeed">Feed / wanda</label><textarea class="input" id="seFeed" rows="4" placeholder="e.g. wanda type and kg per day, green fodder, minerals…">'+esc(s.feed||'')+'</textarea>'+
+    '<label class="label" for="seNo">Notes</label><textarea class="input" id="seNo" rows="3">'+esc(s.notes||'')+'</textarea>'+
+    '<button class="btn primary block" id="seOk">Save</button><button class="btn block" data-close>Cancel</button></div>',function(q){
+      var ls=s.shed;
+      $all('[data-ls]',q).forEach(function(c){c.addEventListener('click',function(){ls=c.dataset.ls;$all('[data-ls]',q).forEach(function(z){z.classList.toggle('on',z===c);});});});
+      $('#seOk',q).addEventListener('click',function(){
+        s.name=norm($('#seN',q).value)||s.name;s.shed=ls;s.feed=$('#seFeed',q).value.trim();s.notes=$('#seNo',q).value.trim();
+        if(ageEd){var fv=parseInt($('#seF',q).value,10),tv=parseInt($('#seT',q).value,10);if(!isNaN(fv)&&!isNaN(tv)&&tv>fv){s.from=fv;s.to=tv;s.short=fv+'–'+tv+' m';var i=db.sections.indexOf(s);if(i<3)db.sections[i+1].from=tv;if(i>0)db.sections[i-1].to=fv;if(i===3)db.sections[4].from=tv;db.sections.slice(0,4).forEach(function(z){z.short=z.from+'–'+z.to+' m';});}}
+        save();closeSheet();route();});
+    });});});
+  var se=$('#setEdit',root);if(se)se.addEventListener('click',function(){var st=db.settings;
+    var F=[['weanM','Weaning age (months)'],['heatMinM','Heat prep: minimum age (months)'],['heatEvery','Heat prep review every (days)'],['heatOvsyncDays','Ovsync hint after (days in heat prep)'],['dehornDays','Dehorning after birth (days)']];
+    openSheet('<h2>Change timings</h2><div class="stack" style="margin-top:12px">'+F.map(function(f){return'<label class="label" for="st_'+f[0]+'">'+f[1]+'</label><input class="input" id="st_'+f[0]+'" inputmode="numeric" value="'+esc(String(st[f[0]]))+'">';}).join('')+'<button class="btn primary block" id="stOk">Save</button><button class="btn block" data-close>Cancel</button></div>',function(q){
+      $('#stOk',q).addEventListener('click',function(){F.forEach(function(f){var v=parseInt($('#st_'+f[0],q).value,10);if(v>0)st[f[0]]=v;});save();closeSheet();route();});});});
+}
+
 /* ---------- HERD ---------- */
-var herdQ='',herdShed='',herdSt='';
+var herdQ='',herdShed='',herdSt='',herdSec='';
 function vHerd(){
   var sh=sheds();if(herdShed&&sh.indexOf(herdShed)<0)herdShed='';
   var h='<div class="view"><div class="top">'+LOGO+'<h1>My heifers <span class="muted" style="font-weight:500">('+act().length+')</span></h1><button class="iconbtn" id="bk" aria-label="Backup and restore">'+I.more+'</button></div>'+
@@ -727,6 +869,7 @@ function vHerd(){
   '<div class="row" style="flex-wrap:wrap;gap:8px"><a href="#tag-new" class="btn sm" style="text-decoration:none">'+I.plus.replace('<svg','<svg width="18" height="18"')+'Add with details</a><button class="btn sm" id="pasteBtn">Paste a long list</button></div></div>'+
   '<div class="search" id="hs">'+I.search+'<input id="hq" inputmode="numeric" placeholder="Find tag number" aria-label="Find tag number" value="'+esc(herdQ)+'" autocomplete="off"><button class="clear" id="hqc" aria-label="Clear search">'+I.x+'</button></div>'+
   (function(){var nr=db.tags.filter(function(t){return t.removed;}).length;var opts=[['','All'],['f','Female'],['m','Male'],['pregnant','Pregnant'],['insem','Inseminated'],['empty','Empty']];if(nr)opts.push(['removed','Removed ('+nr+')']);return'<div class="chips" style="flex-wrap:nowrap;overflow-x:auto;margin:0 -20px;padding:0 20px 2px">'+opts.map(function(o){return'<button class="chip '+(herdSt===o[0]?'on':'')+'" style="white-space:nowrap" data-hst="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div>';})()+
+  '<div class="chips" style="flex-wrap:nowrap;overflow-x:auto;margin:0 -20px;padding:0 20px 2px"><button class="chip '+(!herdSec?'on':'')+'" data-hsec="" style="white-space:nowrap">All sections</button>'+db.sections.map(function(z){return'<button class="chip '+(herdSec===z.id?'on':'')+'" data-hsec="'+z.id+'" style="white-space:nowrap">'+esc(z.short)+'</button>';}).join('')+'</div>'+
   (sh.length?'<div class="chips" id="shedChips"><button class="chip '+(!herdShed?'on':'')+'" data-shed="">All</button>'+sh.map(function(x){return'<button class="chip '+(herdShed===x?'on':'')+'" data-shed="'+esc(x)+'">'+esc(x)+'</button>';}).join('')+'</div>':'')+
   '<div class="small muted" id="hcount"></div>'+
   '</div><div class="grid" id="hg" style="padding-top:12px;padding-bottom:24px;flex:1"></div>'+nav('herd')+'</div>';
@@ -750,6 +893,7 @@ function vHerd(){
   $('#hqc').addEventListener('click',function(){herdQ='';q.value='';drawHerd();q.focus();});
   $('#bk').addEventListener('click',function(){go('#backup');});
   $all('[data-shed]').forEach(function(c){c.addEventListener('click',function(){herdShed=c.dataset.shed;$all('[data-shed]').forEach(function(x){x.classList.toggle('on',x===c);});drawHerd();});});
+  $all('[data-hsec]').forEach(function(c){c.addEventListener('click',function(){herdSec=c.dataset.hsec;$all('[data-hsec]').forEach(function(x){x.classList.toggle('on',x===c);});drawHerd();});});
   $all('[data-hst]').forEach(function(c){c.addEventListener('click',function(){herdSt=c.dataset.hst;$all('[data-hst]').forEach(function(x){x.classList.toggle('on',x===c);});drawHerd();});});
   drawHerd();
   function drawHerd(){
@@ -758,9 +902,10 @@ function vHerd(){
     var list=db.tags.filter(function(t){
       if(herdSt==='removed'){if(!t.removed)return false;}else{if(t.removed)return false;if(herdSt==='f'){if(t.sex!=='Female')return false;}else if(herdSt==='m'){if(t.sex!=='Male')return false;}else if(herdSt&&(t.preg||'')!==herdSt)return false;}
       if(herdShed&&t.shed!==herdShed)return false;
+      if(herdSec&&t.section!==herdSec)return false;
       return!ql||t.no.toLowerCase().indexOf(ql)>=0||(t.note||'').toLowerCase().indexOf(ql)>=0||(t.shed||'').toLowerCase().indexOf(ql)>=0;
     }).sort(function(a,b){if(ql){var ae=a.no.toLowerCase()===ql?0:a.no.toLowerCase().indexOf(ql)===0?1:2,be=b.no.toLowerCase()===ql?0:b.no.toLowerCase().indexOf(ql)===0?1:2;if(ae!==be)return ae-be;}return cmp(a.no,b.no);});
-    $('#hcount').textContent=(ql||herdShed||herdSt)?(list.length+' match'+(list.length===1?'':'es')):(act().length?'Tap a tag to see or edit its details.':'');
+    $('#hcount').textContent=(ql||herdShed||herdSt||herdSec)?(list.length+' match'+(list.length===1?'':'es')):(act().length?'Tap a tag to see or edit its details.':'');
     var g=$('#hg');
     if(!db.tags.length){g.innerHTML='<div class="empty"><div class="big">'+I.tag+'</div><h3>No heifers yet</h3><span>Type a tag number above and tap Add.</span></div>';return;}
     if(!list.length){g.innerHTML='<div class="empty"><h3>No tag “'+esc(herdQ.trim())+'”</h3>'+(ql?'<button class="btn primary" id="addQ">Add '+esc(herdQ.trim())+'</button>':'')+'</div>';var aq=$('#addQ');if(aq)aq.addEventListener('click',function(){doAdd(herdQ);herdQ='';q.value='';drawHerd();});return;}
@@ -774,7 +919,7 @@ function vTag(no){
   var t=isNew?{no:'',note:'',sex:'Female'}:getTag(no);
   if(!t){go('#herd');return;}
   var bEst=!t.birth&&t.ageM!=null&&t.ageM!==''?addMonths(todayISO(),ageMonths(t)):'';var approx=!!(t.birthApprox||bEst);
-  var f={no:t.no,sex:t.sex||'',birth:t.birth||bEst,ageM:t.ageM!=null?t.ageM:'',shed:t.shed||'',note:t.note||'',kg:''};
+  var f={section:t.section||'',no:t.no,sex:t.sex||'',birth:t.birth||bEst,ageM:t.ageM!=null?t.ageM:'',shed:t.shed||'',note:t.note||'',kg:''};
   var lw=lastWeight(t);
   var photo={changed:false,data:null};
   var age=ageMonths(t);
@@ -809,6 +954,20 @@ function vTag(no){
       x+='</div>';
     }
     return x+'</div>';
+  })()+
+  (function(){
+    var e=t.no?expSection(t):null;
+    var x='<div class="stack"><div class="label">Section</div><div class="chips">'+db.sections.map(function(z){return'<button type="button" class="chip '+(f.section===z.id?'on':'')+'" data-secp="'+z.id+'">'+esc(z.short)+'</button>';}).join('')+'</div>'+
+      '<span class="small muted">'+(t.section&&t.sectionAt?'In '+esc(secFull(t.section))+' since '+esc(fmtDate(t.sectionAt))+'. ':'')+(e&&t.section&&e!==t.section?'<b style="color:var(--red)">By age she should move to '+esc(secFull(e))+'.</b>':'Set automatically from age; change it if needed.')+'</span></div>';
+    var am=ageMonths(t);
+    if(t.care||(am!=null&&am<3&&t.no)){
+      x+='<div class="sect"><div class="sect-h">Calf care</div>';
+      if(t.care){x+='<div class="list">'+CARE.map(function(c){var dn=t.care.done&&t.care.done[c.k];var due=addDays(t.care.start,careOffset(c));return'<label class="li" style="cursor:pointer"><input type="checkbox" data-care="'+c.k+'" '+(dn?'checked':'')+' style="width:24px;height:24px;accent-color:var(--g);flex-shrink:0"><span class="grow"><span style="display:block;font-weight:600">'+esc(c.l)+'</span><span class="sub">'+(dn?'Done '+esc(fmtDate(dn)):careOffset(c)?'Due '+esc(fmtDate(due))+' ('+inDaysTxt(daysBetween(todayISO(),due))+')':'Right after birth')+'</span></span></label>';}).join('')+'</div>';
+        x+='<div class="small muted">'+(t.wean&&t.wean!=='before'?'Weaned '+esc(fmtDate(t.wean)):'Weaning reminder at '+db.settings.weanM+' months')+'</div>';}
+      else x+='<button type="button" class="btn sm primary" id="careStart" style="align-self:flex-start">Start calf care checklist</button>';
+      x+='</div>';
+    }
+    return x;
   })()+
   '<div class="stack"><label class="label" for="fShed">Shed / location</label><input class="input" id="fShed" value="'+esc(f.shed)+'" placeholder="e.g. Main heifers area" autocomplete="off">'+
   '<div class="chips">'+sh.map(function(x){return'<button type="button" class="chip '+(f.shed===x?'on':'')+'" data-shedp="'+esc(x)+'">'+esc(x)+'</button>';}).join('')+'<a class="chip" href="#sheds" style="text-decoration:none;color:var(--g);font-weight:600">Manage sheds</a></div></div>'+
@@ -846,6 +1005,9 @@ function vTag(no){
     shrinkImage(file).then(function(d){photo={changed:true,data:d};var el=$('[data-photo]');el.innerHTML='<img src="'+d+'" alt="New photo">';el.classList.add('has');$('#phDel').style.display='';},function(){toast('Could not read that photo');});});
   $('#phDel').addEventListener('click',function(){photo={changed:true,data:null};var el=$('[data-photo]');el.classList.remove('has');el.innerHTML=I.camera+'<span>Add photo</span>';$('#phDel').style.display='none';});
   $all('[data-sex]').forEach(function(c){c.addEventListener('click',function(){f.sex=f.sex===c.dataset.sex?'':c.dataset.sex;$all('[data-sex]').forEach(function(x){x.classList.toggle('on',x.dataset.sex===f.sex);});$('#breedSec').style.display=f.sex==='Male'?'none':'';});});
+  $all('[data-secp]').forEach(function(c){c.addEventListener('click',function(){f.section=f.section===c.dataset.secp?'':c.dataset.secp;$all('[data-secp]').forEach(function(z){z.classList.toggle('on',z.dataset.secp===f.section);});var z=secById(f.section);if(z&&z.shed){$('#fShed').value=z.shed;$all('[data-shedp]').forEach(function(y){y.classList.toggle('on',y.dataset.shedp===z.shed);});}});});
+  $all('[data-care]').forEach(function(cb){cb.addEventListener('change',function(){t.care.done=t.care.done||{};if(cb.checked)t.care.done[cb.dataset.care]=todayISO();else delete t.care.done[cb.dataset.care];save();toast(cb.checked?'Marked done':'Marked not done');});});
+  var cst=$('#careStart');if(cst)cst.addEventListener('click',function(){t.care={start:t.birth||todayISO(),done:{}};save();doSave(function(){vTag(t.no);});});
   $all('[data-shedp]').forEach(function(c){c.addEventListener('click',function(){$('#fShed').value=c.dataset.shedp;$all('[data-shedp]').forEach(function(x){x.classList.toggle('on',x===c);});});});
   function rb(){
     $all('[data-pg]').forEach(function(b){var k=b.dataset.pg;var on=k==='not'?(B.preg==='empty'||B.preg==='insem'):k===B.preg;b.classList.toggle('on',on);});
@@ -871,7 +1033,7 @@ function vTag(no){
   $('#fMom').addEventListener('input',rm);rm();
   $('#viewMom').addEventListener('click',function(){var m=norm($('#fMom').value);if(!m)return;
     doSave(function(){if(!getTag(m)){db.tags.push({no:m,note:'',weights:[],sex:'Female',lact:0});db.tags.sort(function(a,b){return cmp(a.no,b.no);});save();toast('Mother '+m+' added to your heifers');}go('#tag-'+encodeURIComponent(m));});});
-  function addCalf(cv,d,sex){if(!cv||getTag(cv))return false;db.tags.push({no:cv,note:'',weights:[],birth:d||'',mother:t.no,shed:'Calf pen',lact:0,sex:sex||''});db.tags.sort(function(a,b){return cmp(a.no,b.no);});return true;}
+  function addCalf(cv,d,sex){if(!cv||getTag(cv))return false;var s1=secById('s1');db.tags.push({no:cv,note:'',weights:[],birth:d||'',mother:t.no,shed:(s1&&s1.shed)||'Calf pen',section:'s1',sectionAt:d||todayISO(),care:{start:d||todayISO(),done:{}},lact:0,sex:sex||''});db.tags.sort(function(a,b){return cmp(a.no,b.no);});return true;}
   $('#viewCalf').addEventListener('click',function(){var cv=norm($('#fCalf').value);if(!cv)return;doSave(function(){if(addCalf(cv,t.calving,'')){save();pendingCalf=cv;toast('Calf '+cv+' added — fill in its details');}go('#tag-'+encodeURIComponent(cv));});});
   $('#recDel').addEventListener('click',function(){
     var cs='';
@@ -919,7 +1081,10 @@ function vTag(no){
     var kgV=parseFloat(String($('#fKg').value).replace(',','.'));
     var oldNo=t.no;
     t.no=newNo;t.sex=f.sex;t.shed=norm($('#fShed').value);t.note=norm($('#fNote').value);
-    t.birth=$('#fBirth').value||'';t.mother=momV;if(t.birth&&approx)t.birthApprox=true;else delete t.birthApprox;delete t.ageM;delete t.ageAt;
+    t.birth=$('#fBirth').value||'';t.mother=momV;
+    if(f.section!==(t.section||'')){t.section=f.section;t.sectionAt=todayISO();}
+    if(!t.section){var es=ageSection(t);if(es){t.section=es;t.sectionAt=todayISO();}}
+    if(!t.wean){var am2=ageMonths(t);if(am2!=null&&am2>(+db.settings.weanM)+1)t.wean='before';}if(t.birth&&approx)t.birthApprox=true;else delete t.birthApprox;delete t.ageM;delete t.ageAt;
     if(f.sex!=='Male'){
       t.preg=B.preg;t.aiDate=$('#fAi').value||'';
       if(t.preg==='pregnant'&&!t.aiDate){var pmv=parseFloat($('#fPm').value);if(!isNaN(pmv)){t.pregM=pmv;t.pregAt=todayISO();}else{delete t.pregM;delete t.pregAt;}}else{delete t.pregM;delete t.pregAt;}
@@ -985,7 +1150,7 @@ function restoreText(txt){
   try{var d=JSON.parse(txt);if(!d||!Array.isArray(d.tags)||!Array.isArray(d.sessions))throw 0;
     confirmSheet('Replace current data?','This phone has '+db.tags.length+' heifers and '+db.sessions.length+' treatments. The backup has '+d.tags.length+' heifers and '+d.sessions.length+' treatments.','Restore backup',true,function(){
       var ph=d.photos||{};delete d.photos;db=d;if(!db.custom)db.custom={};save();
-      if(!Array.isArray(db.rem))db.rem=defaultRems();var ks=Object.keys(ph);var p=Promise.resolve();ks.forEach(function(k){p=p.then(function(){return photoPut(k,ph[k]);});});
+      if(!Array.isArray(db.rem))db.rem=defaultRems();if(!Array.isArray(db.sections))db.sections=defaultSections();db.settings=Object.assign(defaultSettings(),db.settings||{});var ks=Object.keys(ph);var p=Promise.resolve();ks.forEach(function(k){p=p.then(function(){return photoPut(k,ph[k]);});});
       p.catch(function(){}).then(function(){toast('Backup restored');route();});
     });
   }catch(err){closeSheet();toast('That is not a Heifer Diary backup');}
@@ -1406,6 +1571,7 @@ function vSummary(s){
 }
 
 /* ---------- boot ---------- */
+initSections();
 route();
 if('serviceWorker' in navigator&&location.protocol==='https:'){
   window.addEventListener('load',function(){try{navigator.serviceWorker.register('sw.js').catch(function(){});}catch(e){}});
